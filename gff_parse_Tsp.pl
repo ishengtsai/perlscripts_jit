@@ -1,0 +1,127 @@
+#!/usr/bin/perl -w
+use strict;
+
+
+
+if (@ARGV != 4) {
+    print "$0 BMA.fa gff BMA.WS235.gff BMA.WS235.forcuff.gtf\n\n" ;
+
+
+	exit ;
+}
+my $fasfile = shift @ARGV ; 
+my $file = shift @ARGV;
+
+my $outfile1 = shift @ARGV ; 
+my $outfile2 = shift @ARGV ; 
+
+open OUT, ">" , "$outfile1" or die "can't oepn $outfile1\n" ; 
+open OUT2, ">" ,"$outfile2" or die "can't oepn $outfile2\n" ; 
+
+my %fasta = () ; 
+open(IN, "$fasfile") or die "daodsiaosid\n" ; 
+while (<IN>) {
+
+    chomp; 
+    if ( />(\S+)/ ) {
+	$fasta{$1}++ ; 
+    }
+
+
+}
+close(IN) ; 
+
+open (IN, "$file") or die "oops!\n" ;
+
+my $exon_num = 0  ;
+my $gene = '' ; 
+  
+
+my %gene_start = () ; 
+my %gene_end = () ; 
+my %gene_strand = () ; 
+my %gene_exons = () ; 
+
+my %scaffolds = () ; 
+
+my @gene_orders = () ; 
+
+while (<IN>) {
+    next if /\#/ ; 
+
+    my @r = split /\t/, $_ ; 
+
+    next unless "$r[1]" eq "WormBase_imported" ; 
+    next if "$r[2]" eq "mRNA" ; 
+
+
+    if ( $r[2] eq 'exon' ) {
+
+	if ( $r[8] =~ /Parent=transcript:(\S+)/ ) {
+	    $gene = $1 ; 
+	}
+
+	next unless $fasta{$gene} ;
+
+#	print "$_" ; 
+
+	if ( $gene_start{$gene} ) {
+	    $gene_start{$gene} = $r[3] if  $r[3] < $gene_start{$gene} ;
+	}
+	else {
+	    $gene_start{$gene} = $r[3] ; 
+	    push(@gene_orders, $gene) ; 
+	}
+
+	if ( $gene_end{$gene} ) {
+	    $gene_end{$gene} = $r[4]  if  $r[4] > $gene_end{$gene} ; 
+	}
+	else {
+	    $gene_end{$gene} = $r[4] ; 
+	}
+
+	$scaffolds{$gene} = $r[0] ; 
+	$gene_strand{$gene} = $r[6] ; 
+	$gene_exons{$gene} .= "$_" ; 
+    }
+
+
+
+
+}
+close(IN); 
+
+
+
+
+foreach my $geneinscaff ( @gene_orders ) {
+	my $strand = $gene_strand{$geneinscaff} ; 
+	my $scaff = $scaffolds{$geneinscaff} ; 
+
+	#print "strand: $strand\n" ; 
+
+	print OUT "$scaff\twormbase\tgene\t$gene_start{$geneinscaff}\t$gene_end{$geneinscaff}\t.\t$strand\t.\tID=$geneinscaff\;Name=$geneinscaff\n" ; 
+	print OUT "$scaff\twormbase\tmRNA\t$gene_start{$geneinscaff}\t$gene_end{$geneinscaff}\t.\t$strand\t.\tID=$geneinscaff:mRNA\;Name=$geneinscaff:mRNA\;Parent=$geneinscaff\n" ;
+	
+
+	my @exons = split /\n/, $gene_exons{$geneinscaff} ; 
+
+	if ( $gene_strand{$geneinscaff} eq '-') {
+	    my @reversedExons = reverse(@exons) ;
+            @exons = @reversedExons ;
+	}
+
+	my $exonnum = 1 ; 
+	foreach (@exons) {
+	    my @r = split /\s+/, $_ ; 
+
+	    print OUT "$scaff\twormbase\texon\t$r[3]\t$r[4]\t.\t$strand\t.\tID=$geneinscaff:exon:$exonnum\;Parent=$geneinscaff:mRNA\n" ; 
+	    print OUT2 "$scaff\twormbase\texon\t$r[3]\t$r[4]\t.\t$strand\t.\tgene_id \"$geneinscaff\" transcript_id \"$geneinscaff:mRNA\" exon_number \"$exonnum\"\n" ; 
+
+	    $exonnum++ ; 
+	}
+	
+} 
+
+
+
