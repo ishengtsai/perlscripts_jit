@@ -4,6 +4,7 @@ use warnings;
 
 if (@ARGV != 2) {
     print "$0 dollopoutfile branch\n" ;
+    exit ; 
 }
 
 my $dollopoutfile = shift ; 
@@ -93,13 +94,15 @@ foreach my $k (keys %branches) {
 	my @family = split(//, $string);
 
 	for (my $i = 0 ; $i < @family ; $i++) {
+	    my $familyID = sprintf("%07d", $i) ;
+	    $familyID = "OG" . $familyID ; 
 	    
 	    if ( $family[$i] eq '1' ) {
-		print GAIN "ORTHOMCL$i(\n" ; 
+		print GAIN "$familyID\n" ; 
 	    }
 
             if ( $family[$i] eq'0' ) {
-		print LOSS "ORTHOMCL$i(\n" ;
+		print LOSS "$familyID\n" ;
             }
 
 

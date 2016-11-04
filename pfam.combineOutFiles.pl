@@ -9,7 +9,7 @@ my $contig = '';
 
 
 if (@ARGV != 2) {
-    print "$0 hmmscan.perseq.out.files[separate.by.comma] evalue\n" ; 
+    print "$0 directory evalue\n" ; 
 	exit ;
 }
 

@@ -65,10 +65,11 @@ my $bwacommand = "bwa mem -t $cpu -M -R '\@RG\\tID:$output\\tLB:T1D\\tSM:$output
 #system_call("java -Xmx6g -Djava.io.tmpdir=`pwd`/tmp -jar $gatkjar -T PrintReads -I $output.markdup.realigned.bam -R $ref -BQSR $output.markdup.recal_data.table -o $output.markdup.realigned.recalibrated.bam -L $exomeBed -nct $cpu -nt 1 ") ; 
 
 # call SNPs!
-#system_call("java -Xmx6g -Djava.io.tmpdir=`pwd`/tmp -jar $gatkjar -T HaplotypeCaller -R $ref -I $output.markdup.realigned.recalibrated.bam -L $exomeBed --dbsnp /mnt/nas1/ijt/db/hg19/1000G_phase1.indels.hg19.sites.vcf -stand_call_conf 30 -stand_emit_conf 10 -o $output.raw.snps.indels.g.vcf") ; 
+# https://software.broadinstitute.org/gatk/documentation/article?id=3893
 
-# Updated workflow:
-# http://gatkforums.broadinstitute.org/gatk/discussion/3893/calling-variants-on-cohorts-of-samples-using-the-haplotypecaller-in-gvcf-mode
+#1. Variant calling
+#Run the HaplotypeCaller on each sample's BAM file(s) (if a sample's data is spread over more than one BAM, then pass them all in together) to create single-sample gVCFs, with the option -emitRefConfidence GVCF, and using the .g.vcf extension for the output file
+#Note that versions older than 3.4 require passing the options --variant_index_type LINEAR --variant_index_parameter 128000 to set the correct index strategy for the output gVCF.
 
 my $HaplotypeCallerCommand = "java -Xmx6g -Djava.io.tmpdir=`pwd`/tmp -jar $gatkjar -T HaplotypeCaller -R $ref -I $output.markdup.realigned.recalibrated.bam -L $exomeBed " .
     " --dbsnp /mnt/nas1/ijt/db/hg19/1000G_phase1.indels.hg19.sites.vcf --emitRefConfidence GVCF -o $output.raw.snps.indels.g.vcf " ; 
