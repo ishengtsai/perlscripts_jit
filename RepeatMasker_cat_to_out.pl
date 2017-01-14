@@ -22,6 +22,7 @@ my $offset = 50 ;
 open (IN, "$filenameA") or die "oops!\n" ;
 
 open OUT, ">" , "$out" or die "oops out!\n" ;
+#open GTF, ">", "$filenameA.gtf" or die "dadoapdoadpoa\n" ; 
 open OUT_debug, ">" , "$out.debug" or die "oops out!\n" ;
 
 
