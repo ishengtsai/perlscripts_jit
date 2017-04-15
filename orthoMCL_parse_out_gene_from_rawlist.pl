@@ -4,7 +4,7 @@ use strict;
 
 
 if (@ARGV != 2) {
-    print "$0 orthomcl_19710.cluster SPECIES\n" ;
+    print "$0 orthomcl_19710.cluster SPECIES|ALL\n" ;
 
 
     exit ;
@@ -33,7 +33,12 @@ while (<IN>) {
     my %cluster = () ;
     for ( my $i = 1 ; $i < @r ; $i++ ) {
 
-	if ( $r[$i] =~ /($species)\|(\S+)/ ) {
+	if ( $species eq 'ALL' ) {
+	    if ( $r[$i] =~ /(\S+)\|(\S+)/ ) {
+		print "$1\|$2\t$group\n" ;
+	    }
+	}
+	elsif ( $r[$i] =~ /($species)\|(\S+)/ ) {
 	    print "$1\|$2\t$group\n" ;
 	}
     }

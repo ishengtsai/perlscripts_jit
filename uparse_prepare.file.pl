@@ -43,9 +43,18 @@ while (my $file = readdir(DIR)) {
 
 
     my $finalsample ;
-    if ( $SAM =~ /LGL16_(JF\S+)_(\d+)/ ) {
+
+    #LGL16_JS01_3_CGAGAGTT-AGAGTCAC_L001_R1.fastq.gz
+    if ( $SAM =~ /LGL16_(JS\S+)_(\d+)/ ) {
 	$finalsample = "$1$2" ; 
     }
+
+    # 18 samples
+    #LGL17_LP01_73_CTCGACTT-AGAGTCAC_L001_R1.fastq.gz
+    if ( $SAM =~ /LGL17_(LP\S+)_(\d+)/ ) {
+	$finalsample = "$1$2" ;
+    }
+    
 
     my $command = "cp $name\_R1.fastq.gz $finalsample\_R1.fastq.gz ; cp $name\_R2.fastq.gz $finalsample\_R2.fastq.gz ; " ; 
     

@@ -8,12 +8,13 @@ my $largest = 0;
 my $contig = '';
 
 
-if (@ARGV != 6) {
-    print "$0 max_diff max_cov min_cov bestn min_len1 min_len2\n" ;
+if (@ARGV != 7) {
+    print "$0 rerun max_diff max_cov min_cov bestn min_len1 min_len2\n" ;
     print "Need to run: source /home/ijt/bin/FALCON-integrate/env.sh before\n" ; 
     exit ;
 }
 
+my $rerun = shift ; 
 my $max_diff = shift ;
 my $max_cov = shift ;
 my $min_cov = shift ;
@@ -22,13 +23,15 @@ my $min_len1 = shift ;
 my $min_len2 = shift ; 
 
 
-
+my $command ;
+    
+if ( $rerun == 1 ) {   
+    $command = "time /home/ijt/bin/FALCON-integrate/fc_env/bin/fc_ovlp_filter --db ../1-preads_ovl/preads.db --fofn las.fofn --max_diff $max_diff --max_cov $max_cov --min_cov $min_cov --bestn 10 --n_core 48 --min_len  $min_len1 " . " >| preads.ovl" ; 
+    print "$command\n" ; 
+    system("$command") ; 
+}
 
     
-my $command = "time /home/ijt/bin/FALCON-integrate/fc_env/bin/fc_ovlp_filter --db ../1-preads_ovl/preads.db --fofn las.fofn --max_diff $max_diff --max_cov $max_cov --min_cov $min_cov --bestn 10 --n_core 48 --min_len  $min_len1 " . " >| preads.ovl" ; 
-print "$command\n" ; 
-system("$command") ; 
-
 system("ln -sf ../1-preads_ovl/preads4falcon.fasta ./preads4falcon.fasta") ; 
 
 # Given preads.ovl,
