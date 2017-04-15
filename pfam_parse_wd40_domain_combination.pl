@@ -48,6 +48,7 @@ $fastas{$read_name} = $read_seq ;
 
 open OUT, ">", "$file.WD40.combination" or die "oooop!\n" ;
 open OUT2, ">", "$file.NACHT.domain.fasta" or die "oooop!\n" ;
+open OUT3, ">", "$file.NACHT.domain.fasta.info" or die "dsaodpsaod\n" ; 
 open (IN, "$file") or die "can't openfile: $!\n" ;
 
 my %NACHTterms = ();
@@ -136,10 +137,13 @@ while (<IN>) {
     $nachtSeqName .= "$domainline" ;
 
     if ( $nachtSeqName =~ /NACHT/ ) {
+	print OUT3 "$nachtSeqName\t$r[0]\t$domainline\t$originaldomainline\n" ; 
 	print OUT2 "$nachtSeqName\n$nachtSeq\n" ;
 	print "$r[0]\t$domainline\t$WD40count\n" ; 
     }
 
+
+    
     
 }
 

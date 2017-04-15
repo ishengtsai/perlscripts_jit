@@ -23,6 +23,8 @@ my $total = 0 ;
 
 while (my $file = readdir(DIR)) {
 
+    #LGL16_KX01_03_CGAGAGTT-AGAGTCAC_L001_R1.fastq.gz
+    
     next unless $file =~ /_R1.fastq.gz/ ;
 #    print "$file!!!\n" ;
 
@@ -35,15 +37,9 @@ while (my $file = readdir(DIR)) {
 
     my $SAM = $name ;
 
-#    print "$SAM\n" ;
-
-    #my $command = "java -classpath /usr/local/bin/trimmomatic-0.33.jar org.usadellab.trimmomatic.TrimmomaticPE -phred33 $SAM\_R1.fastq.gz $SAM\_R2.fastq.gz $SAM" . 
-    #	"_CL_1.fastq.gz" . " $SAM" . "_CL_1.up.fastq.gz" . " $SAM" . "_CL_2.fastq.gz" . 
-    #	" $SAM" . "_CL_2.up.fastq.gz ILLUMINACLIP:/home/ijt/bin/illumina_adaptors1.fa:2:$qual:10 LEADING:$qual TRAILING:$qual SLIDINGWINDOW:4:$qual MINLEN:50" ;
-
 
     my $finalsample ;
-    if ( $SAM =~ /LGL16_(JF\S+)_(\d+)/ ) {
+    if ( $SAM =~ /LGL16_(\S+)_(\d+)_\w+-\w+_L\d+/ ) {
 	$finalsample = "$1$2" ; 
     }
 
