@@ -21,13 +21,32 @@ parser = argparse.ArgumentParser(description='Converts maker gff to my own custo
 parser.add_argument('--gff', required=True)
 parser.add_argument('--proteinfile', required=True)
 parser.add_argument('--speciesprefix', required=True)
+parser.add_argument('--excludescaffolds', required=True)
+
 
 # start parsing input
 args=parser.parse_args()
 species = args.speciesprefix
 
+# read excluded scaffolds file
+excludeFile = open(args.excludescaffolds,"r")
+
+# use set as unique values
+excludeScaffolds = set()
+
+# Read gff file
+for line in excludeFile:
+        line = line.rstrip()
+        excludeScaffolds.add(line) 
+        
+excludeFile.close()
+        
+
 # first read maker file
 gffFile = open(args.gff,"r")
+
+
+        
 
 
 # invoke two dictionaries and some variables
@@ -52,6 +71,9 @@ print ("Now start parsing maker gff files..\n")
 # Read gff file
 for line in gffFile:
 
+
+
+        
         # Skip commented lines and fasta file afterwards
         if re.search('^\#', line):
                 continue
@@ -62,6 +84,10 @@ for line in gffFile:
         line = line.rstrip()
         r= line.split()
 
+        #skip if found in contaminated scaffolds
+        if r[0] in excludeScaffolds:
+                continue
+        
         # Now need to reference from this section
         # http://www.ebi.ac.uk/~marco/2016_python_course/2-Advanced_data_structures-and-file-parsing.html
 

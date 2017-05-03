@@ -23,13 +23,14 @@ my $min_len2 = shift ;
 
 
 
-
+#time fc_ovlp_filter --db /mnt/nas1/ijt/falcon/Para-2/1-preads_ovl/preads.db --fofn /mnt/nas1/ijt/falcon/Para-2/1-preads_ovl/merge-gather/las.fofn --max_diff 100 --max_cov 100 --min_cov 1 --bestn 10 --n_core 24 --min_len 5000 >| preads.ovl
     
-my $command = "time /home/ijt/bin/FALCON-integrate/fc_env/bin/fc_ovlp_filter --db ../1-preads_ovl/preads.db --fofn las.fofn --max_diff $max_diff --max_cov $max_cov --min_cov $min_cov --bestn 10 --n_core 48 --min_len  $min_len1 " . " >| preads.ovl" ; 
+my $command = "time /home/ijt/bin/FALCON-integrate/fc_env/bin/fc_ovlp_filter --db ../1-preads_ovl/preads.db --fofn ../1-preads_ovl/merge-gather/las.fofn --max_diff $max_diff --max_cov $max_cov --min_cov $min_cov --bestn $bestn --n_core 24 --min_len  $min_len1 " . " >| preads.ovl" ; 
+
 print "$command\n" ; 
 system("$command") ; 
 
-system("ln -sf ../1-preads_ovl/preads4falcon.fasta ./preads4falcon.fasta") ; 
+system("ln -sf ../1-preads_ovl/db2falcon/preads4falcon.fasta ./preads4falcon.fasta") ; 
 
 # Given preads.ovl,
 # write sg_edges_list, c_path, utg_data, ctg_paths.
