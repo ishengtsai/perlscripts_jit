@@ -66,7 +66,7 @@ for my $scaffold (sort keys %scaffolds ) {
     
     for my $gene ( sort keys % { $ScaffoldGenes { $scaffold } } ) {
 	my ($start,$end) = split /\./, $geneLocation { $gene } ; 
-	print "$start\t$end\t$gene\n" ;
+	print "$start\t$end\tgene\n" ;
 	print "\t\t\t\tlocus_tag\t$gene\n" ; 
 
 
