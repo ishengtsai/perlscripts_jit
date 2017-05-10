@@ -46,7 +46,7 @@ close(IN) ;
 $fastas{$read_name} = $read_seq ;
 
 
-open OUT, ">", "$file.WD40.combination" or die "oooop!\n" ;
+open OUT, ">", "$file.WD40.combination.txt" or die "oooop!\n" ;
 open OUT2, ">", "$file.NACHT.domain.fasta" or die "oooop!\n" ;
 open OUT3, ">", "$file.NACHT.domain.fasta.info" or die "dsaodpsaod\n" ; 
 open (IN, "$file") or die "can't openfile: $!\n" ;
@@ -151,7 +151,11 @@ my @speciesNames = keys %species ;
 
 
 
-print OUT "domain\t@speciesNames\n" ; 
+print OUT "domain" ; 
+foreach (@speciesNames) {
+    print OUT "\t$_" ; 
+}
+print OUT "\n" ; 
 
 for my $domain (sort keys %NACHTterms ) {
     #print "$domain\n" ; 

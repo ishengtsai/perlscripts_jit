@@ -3,17 +3,17 @@ use strict;
 
 
 
-if (@ARGV != 1) {
-    print "$0 gff \n" ; 
+if ( @ARGV != 3) {
+    print "$0 gff product to exclude\n" ; 
 
 	exit ;
 }
 
 my $file = shift @ARGV;
+my $productfile = shift @ARGV ; 
 
+my $excludefile = shift @ARGV ; 
 
-## read the fastas
-open (IN, "$file") or die "oops!\n" ;
 
 # like this
 #PNOK.scaff0001.C        augustus        gene    6681    7721    .       -       .       ID=PNOK_0000400;Name=PNOK_0000400
@@ -30,7 +30,187 @@ my %ScaffoldGenes = () ;
 my %geneStrand = () ;
 my %geneLocation = () ; 
 my %exons = () ;
+my %productDESC = () ; 
 
+my %exclude = () ;
+
+#11 ERROR:   SEQ_FEAT.InternalStop
+#    2 ERROR:   SEQ_FEAT.StartCodon
+#    2 ERROR:   SEQ_INST.BadProteinStart
+#    11 ERROR:   SEQ_INST.StopInProtein
+
+#    7 ERROR:   SEQ_FEAT.NoStop
+#    SEQ_FEAT.BadTrailingCharacter
+
+open (IN, "$excludefile") or die "daosdpadoapdoas\n" ;
+
+while (<IN>) {
+
+    if ( /SEQ_FEAT.BadTrailingCharacter/ ) {
+	chomp ;
+	#print "$_\n" ;
+
+	if ( /\|(\D+\d+)\]$/ ) {
+	    #print "$1\n" ;
+	    $exclude{$1}++ ;
+	}
+    }
+
+    
+    if ( /SEQ_FEAT.NoStop/ ) {
+	chomp ;
+	#print "$_\n" ;
+
+	if ( /\|(\D+\d+)\]$/ ) {
+	    #print "$1\n" ;
+	    $exclude{$1}++ ;
+	}
+    }
+    
+    if ( /SEQ_FEAT.InternalStop/ ) {
+	chomp ;
+	#print "$_\n" ; 
+	
+	if ( /\|(\D+\d+)\]$/ ) {
+	    #print "$1\n" ;
+	    $exclude{$1}++ ; 
+	}
+    }
+
+    if ( /SEQ_FEAT.StartCodon/ ) {
+	chomp ;
+	#print "$_\n" ;
+
+	if ( /\|(\D+\d+)\]$/ ) {
+	    #print "$1\n" ;
+	    $exclude{$1}++ ;
+	}
+    }
+
+    if ( /SEQ_INST.BadProteinStart/ ) {
+	chomp ;
+	#print "$_\n" ;
+
+	if ( /\|(\D+\d+)\]$/ ) {
+	    #print "$1\n" ;
+	    $exclude{$1}++ ;
+	}
+    }
+
+    if ( /SEQ_INST.StopInProtein/ ) {
+	chomp ;
+	#print "$_\n" ;
+
+	if ( /\|(\D+\d+)\]$/ ) {
+	    #print "$1\n" ;
+	    $exclude{$1}++ ;
+	}
+    }
+
+}
+close (IN) ; 
+
+
+
+
+open (IN, "$productfile") or die "daospdaooap\n" ;
+while (<IN>) {
+    next if /^SeqName/ ;
+    chomp ; 
+    my @r = split /\t/ ; 
+
+    $r[0] =~ s/\.1// ;
+    $r[1] =~ s/\s+$//gi ; 
+
+    # partial
+    $r[1] =~ s/partial$// ;
+    $r[1] =~ s/pseudo$// ; 
+    $r[1] =~ s/\s+$//gi ;
+    
+    next if $r[1] =~ /hypothetical/ ;
+    next if $r[1] =~ /---NA---/ ;
+    next if $r[1] =~ /DUF\d+/gi ;
+    next if $r[1] =~ /=/ ;
+    next if $r[1] =~ /\#/ ;
+    next if $r[1] =~ /^-/ ;
+    next if $r[1] =~/^\d+$/ ;
+    next if $r[1] =~/\[.+\]/ ;
+    next if $r[1] eq 'predicted protein' ; 
+    next if $r[1] =~ /Plasmodium/ ; 
+    next if $r[1] =~ /c-term/gi ; 
+    
+    if ( $r[1] =~ /\-\s?$/ ) {
+	$r[1] =~ s/\-\s?$// ;
+    } 
+
+    if ( $r[1] =~ /\_$/ ) {
+	$r[1] =~ s/\_$// ;
+    }
+    
+    next if $r[1] =~ /Crystal Structure/ ;
+    next if $r[1] =~ /structure of/ ;
+    next if $r[1] =~ /homolog/ ;
+    next if $r[1] =~ /domain$/ ; 
+    next if $r[1] =~ /fold$/ ;
+    next if $r[1] =~ /motif$/ ;
+    next if $r[1] =~ /uncharacterized protein/ ; 
+    
+    #plaural
+    $r[1] =~ s/factors$/factor/ ;
+    $r[1] =~ s/vesicles$/vesicle/ ;
+    $r[1] =~ s/domains$/domain/;
+    $r[1] =~ s/hydrolases$/hydrolase/;
+    $r[1] =~ s/phosphatases$/phosphatase/ ;
+    $r[1] =~ s/photoreceptors/photoreceptor/ ;
+    $r[1] =~ s/intraradices/intraradix/ ;
+    $r[1] =~ s/repeats/repeat/ ; 
+    
+    $r[1] =~ s/like$/like protein/ ;
+    $r[1] =~ s/related$/related protein/ ;
+    $r[1] =~ s/repeat$/repeat protein/ ;
+    $r[1] =~ s/^related/protein related/ ;
+    $r[1] =~ s/\(//gi ;
+    $r[1] =~ s/\)//gi ;
+    $r[1] =~ s/Tf2 155 kDa type \d+// ;
+
+    
+
+    $r[1] =~ s/COG complex component/conserved oligomeric golgi complex component/ ; 
+    
+
+    
+    $r[1] =~ s/\s+$//gi ;
+
+
+
+    
+    # More filtering!
+    next if $r[1] =~ 'protein related to TY4B- pseudo' ; 
+    next if $r[1] =~ /meiotically up-regulated 152/ ;
+    next if $r[1] eq 'DNA RNA' ; 
+
+    if ( $r[1] =~ /binding$/ ) {
+	$r[1] =~ s/binding$/binding protein/ ;
+    }
+    if ( $r[1] =~ /domain$/ ) {
+	$r[1] =~ s/domain$/domain containing protein/ ;
+    }
+
+    unless ( $r[1] =~ /\w+/ ) {
+	next ;
+    }
+    
+    next unless $r[1] ; 
+    
+    #print "$r[0]\t$r[1]\n" ;
+    $productDESC{$r[0]} = $r[1] ; 
+}
+
+close(IN) ; 
+#exit ; 
+
+
+open (IN, "$file") or die "oops!\n" ;
 
 while (<IN>) {
 
@@ -65,8 +245,17 @@ for my $scaffold (sort keys %scaffolds ) {
     print ">Feature $scaffold\n" ; 
     
     for my $gene ( sort keys % { $ScaffoldGenes { $scaffold } } ) {
+
+	next if $exclude{$gene} ; 
+
 	my ($start,$end) = split /\./, $geneLocation { $gene } ; 
-	print "$start\t$end\tgene\n" ;
+
+	if ( $geneStrand { $gene } eq '+' ) {
+	    print "$start\t$end\tgene\n" ;
+	}
+	else {
+	    print "$end\t$start\tgene\n" ; 
+	}
 	print "\t\t\t\tlocus_tag\t$gene\n" ; 
 
 
@@ -89,7 +278,7 @@ for my $scaffold (sort keys %scaffolds ) {
 	else {
             for my $exonStart ( reverse sort {$a<=>$b} keys %{ $exons{$gene} }  ) {
 		my $exonEnd =  $exons{$gene}{$exonStart} ;
-		print "$exonStart\t$exonEnd" ;
+		print "$exonEnd\t$exonStart" ;
 		if ( $firstExon == 1 ) {
 		    print "\tmRNA\n" ;
 		    $firstExon = 0 ;
@@ -99,7 +288,10 @@ for my $scaffold (sort keys %scaffolds ) {
 		}
 	    }
 	}
-	
+
+	if ( $productDESC{$gene} ) {
+	    print "\t\t\t\tproduct\t$productDESC{$gene}\n" ; 
+	}
 	print "\t\t\t\tprotein_id\tgnl|TsaiBRCASPNOKV1|$gene\n" ;
 	print "\t\t\t\ttranscript_id\tgnl|TsaiBRCASPNOKV1|mrna.$gene\n";
 	
@@ -123,7 +315,7 @@ for my $scaffold (sort keys %scaffolds ) {
 	else {
 	    for my $exonStart ( reverse sort {$a<=>$b} keys %{ $exons{$gene} }  ) {
 		my $exonEnd =  $exons{$gene}{$exonStart} ;
-		print "$exonStart\t$exonEnd" ;
+		print "$exonEnd\t$exonStart" ;
 		if ( $firstExon == 1 ) {
 		    print "\tCDS\n" ;
 		    $firstExon = 0 ;
@@ -134,6 +326,9 @@ for my $scaffold (sort keys %scaffolds ) {
 	    }
 	}
 
+	if ( $productDESC{$gene} ) {
+	    print "\t\t\t\tproduct\t$productDESC{$gene}\n" ;
+	}
 	print "\t\t\t\tprotein_id\tgnl|TsaiBRCASPNOKV1|$gene\n" ;
 	print "\t\t\t\ttranscript_id\tgnl|TsaiBRCASPNOKV1|mrna.$gene\n";
 
