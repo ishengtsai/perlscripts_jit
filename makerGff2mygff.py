@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser(description='Converts maker gff to my own custo
 
 parser.add_argument('--gff', required=True)
 parser.add_argument('--proteinfile', required=True)
+parser.add_argument('--transcriptfile', required=True)
 parser.add_argument('--speciesprefix', required=True)
 parser.add_argument('--excludescaffolds', required=True)
 
@@ -282,6 +283,18 @@ with open(species+'.aa.fa', 'w') as fw_protein:
                 #SeqIO.write
                 #write_fasta(out_file)
 
+
+fasta_sequences = SeqIO.parse(open(args.transcriptfile),'fasta')
+
+with open(species+'.nuc.fa', 'w') as fw_transcript:
+        for fasta in fasta_sequences:
+                name, sequence = fasta.id, str(fasta.seq)
+                print (name)
+
+                if name in old2newGene:
+                        fasta.id = old2newGene[name]
+                        #print (name, "->", old2newGene[name])
+                        SeqIO.write(fasta, fw_transcript, "fasta")
                 
 
 '''

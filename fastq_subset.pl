@@ -10,15 +10,23 @@ my $contig = '';
 
 
 
-if (@ARGV != 1) {
-    print "$0 fastq.gz|fastq \n" ; 
+if (@ARGV != 2) {
+    print "$0 readnamefile fastq.gz|fastq \n" ; 
     exit ;
 }
 
-my $filenameA = $ARGV[0];
 
+my $readfile = $ARGV[0] ; 
+my $filenameA = $ARGV[1];
 
+my %reads = () ; 
 
+open (IN, "$readfile") or die "oops!\n" ;
+while (<IN>) {
+    chomp;
+    $reads{$_}++ ; 
+
+}
 
 
 
@@ -32,30 +40,25 @@ else {
 my $line = 0; 
 my $count = 1 ; 
 
+open OUT, ">", "$filenameA.subseq.fq" or die "odapdoapsd\n" ; 
 
 while (<IN>) {
     $line++ ; 
 
     
-    if ( $line == 1 ) {
-	open OUT, '|-', "gzip > $filenameA.$count.fastq.gz" or die "doadpsaodap\n" ;
-    }
 
-    
+    chomp; 
     my $name = $_ ;
     my $seq = <IN> ;
     my $tmp = <IN> ;
     my $qual = <IN> ;
 
-    print OUT "$name$seq$tmp$qual" ; 
-
+    if ( $reads{$name } ) {
     
-    if ( $line == 45000000 ) {
-	print "file $count done! \n" ; 
-	$line = 0 ;
-	$count++ ; 
-	close(OUT) ; 
+	print OUT "$name$seq$tmp$qual" ; 
+    
     }
+
 
     
     

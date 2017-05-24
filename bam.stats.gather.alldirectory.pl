@@ -15,7 +15,7 @@ my $contig = '';
 
 print "$0\n printing bam files...\n" ; 
 
-print "Directory\tTotalReads\tMappedReads\tMappedReads(%)\tForwardStrand\tForwardStrand(%)\tReverseStrand\tReverseStrand(%)\tFailedQC\tFailedQC(%)\tDuplicates\tDuplicates(%)\tPE\tPE(%)\tProper-pairs\tProper-pairs(%)\tBothMapped\tBothMapped(%)\tSingletons\tSingletons(%)\tAverageInsert(bp)\tMedianInsert(bp)\n" ; 
+print "Directory\tFile\tTotalReads\tMappedReads\tMappedReads(%)\tForwardStrand\tForwardStrand(%)\tReverseStrand\tReverseStrand(%)\tFailedQC\tFailedQC(%)\tDuplicates\tDuplicates(%)\tPE\tPE(%)\tProper-pairs\tProper-pairs(%)\tBothMapped\tBothMapped(%)\tSingletons\tSingletons(%)\tAverageInsert(bp)\tMedianInsert(bp)\n" ; 
 
 my @dirs = grep { -d } glob '*';
 
@@ -28,7 +28,7 @@ while (my $file = readdir(DIR)) {
     next unless $file =~ /.bam.stats/ ; 
 #    print "$file!!!\n" ;
 
-    print "$directory\t";
+    print "$directory\t$file\t";
 
     open (IN, "$directory/$file") or die $! ; 
 
