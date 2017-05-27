@@ -3,8 +3,8 @@ use strict;
 
 
 
-if ( @ARGV != 3) {
-    print "$0 gff product to exclude\n" ; 
+if ( @ARGV != 4) {
+    print "$0 gff product to_exclude to_exclude_2 \n" ; 
 
 	exit ;
 }
@@ -13,6 +13,8 @@ my $file = shift @ARGV;
 my $productfile = shift @ARGV ; 
 
 my $excludefile = shift @ARGV ; 
+my $excludefile2 = shift @ARGV ; 
+
 
 
 # like this
@@ -109,6 +111,16 @@ while (<IN>) {
 
 }
 close (IN) ; 
+
+
+open (IN, "$excludefile2") or die "daosdpadoapdoas\n" ;
+
+while (<IN>) {
+    chomp ;
+    my @r = split /\s+/, $_ ;
+    $exclude{$r[1]}++ ; 
+}
+close(IN) ; 
 
 
 
