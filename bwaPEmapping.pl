@@ -21,11 +21,16 @@ if (@ARGV != 2) {
 #my $ref = "/mnt/nas1/ijt/db/hg19/GRCh38_full_analysis_set_plus_decoy_hla.fa" ; 
 #my $ref = "/home/ishengtsai/db/hg19/ucsc.hg19.fasta" ;
 my $ref = "/mnt/nas1/ijt/db/hg19/ucsc.hg19.fasta" ; 
-my $picardbin = "/usr/local/bioinfo/picard-tools-1.130/picard.jar" ; 
-my $gatkjar = "/usr/local/bioinfo/GenomeAnalysisTK.jar" ; 
+
+#my $picardbin = "/usr/local/bioinfo/picard-tools-1.130/picard.jar" ; 
+my $picardbin = "/home/ijt/bin/picard.jar" ; 
+
+#my $gatkjar = "/usr/local/bioinfo/GenomeAnalysisTK.jar" ; 
+my $gatkjar = "/home/ijt/bin/GenomeAnalysisTK.jar" ; 
+
 my $dict = "/mnt/nas1/ijt/db/hg19/ucsc.hg19.dict" ; 
 #my $exomeBed = "/mnt/nas1/ijt/T1D/Agilent_SureSelect_Exome_V6.bed" ; 
-my $exomeBed = "/mnt/nas1/ijt/T1D/Agilent_SureSelect_Exome_V6_Padded.bed" ; 
+#my $exomeBed = "/mnt/nas1/ijt/T1D/Agilent_SureSelect_Exome_V6_Padded.bed" ; 
 
 my $input = shift ; 
 my $output = $input ; 
