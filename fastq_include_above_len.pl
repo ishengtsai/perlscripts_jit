@@ -35,12 +35,13 @@ while (<IN>) {
 
     my $name = $_ ;
     my $seq = <IN> ;
+    chomp($seq) ; 
     my $tmp = <IN> ;
     my $qual = <IN> ;
     my $seqlen = length($seq)  ; 
 
     if ( $seqlen >= $minlen ) {
-	print OUT "$name$seq$tmp$qual" ; 
+	print OUT "$name$seq\n$tmp$qual" ; 
 	$totalbp += $seqlen ; 
     }
 
