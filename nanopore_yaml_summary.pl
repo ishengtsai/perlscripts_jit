@@ -24,9 +24,9 @@ my $filenameA = $ARGV[0];
 
 my $data = LoadFile($filenameA);
 
-print $data ;
+#print $data ;
 
-print $data->{'All reads'} ;
+#print $data->{'All reads'} ;
 
 
 #for (keys %{$data->{'All reads'}}) {
@@ -39,8 +39,15 @@ my $maxlen = $data->{'All reads'}->{'max.length'} ;
 
 
 
-print "Total\tN50len\t\n" ;
+print "Total\tN50len\tMaxlen\tMedianQ\t>20kbInGB\t>100kbInGB\tTotalQ10\t20kbInGBQ10\t100kbInGBQ10\n" ;
 
-print "$totalgigabases\t$N50len\n" ; 
+print "$totalgigabases\t$N50len\t$maxlen\t" .
+    $data->{'All reads'}->{'median.q'} . "\t" . 
+    $data->{'All reads'}->{'gigabases'}->{'>20kb'} . "\t" .
+    $data->{'All reads'}->{'gigabases'}->{'>100kb'} . "\t" .
+    $data->{'Reads with Q>10'}->{'total.gigabases'} . "\t" .
+    $data->{'Reads with Q>10'}->{'gigabases'}->{'>20kb'} . "\t" .
+    $data->{'Reads with Q>10'}->{'gigabases'}->{'>100kb'} . "\t" . 
+    "\n" ; 
 
 
