@@ -58,7 +58,7 @@ if (any(regex.search(filename) for regex in fastqpattern)):
     print (filename, 'is fastq!')
     seqfileformat = 'fastq'
 else:
-    print ('can not determine fasta or fastq; assume fasta')
+    print ('Assume fasta')
 
 
 
@@ -121,7 +121,7 @@ with open(filename) as fastn_file: # Will close handle cleanly
 # https://docs.python.org/3/library/collections.html#collections.Counter
 
 # Now display stats
-print ("Total seq len:" , totallength , "Total seq num:", cumseqnum, "largest:" , maxlen, "minimum:", minlen)
+print ("Total seq len:" , totallength , "Total seq num:", cumseqnum, "longest:" , maxlen, "minimum:", minlen)
 
 
 # print out N50 , N90 etc                
@@ -146,24 +146,24 @@ if args.detailed:
             GenomeBoundary['N90'] =seqlen
             GenomeBoundary['L90'] =cumseqnum
     
-    print ("N50:", GenomeBoundary['N50'] , 'bp')
-    print ("N90:", GenomeBoundary['N90'] , 'bp')
-    print ("L50:", GenomeBoundary['L50'] )
-    print ("L90:", GenomeBoundary['L90'] )
-    print ("Mean:", seqmeanlen  , 'bp')
-    print ("Median:", seqmedianlen , 'bp' )
+    print ("N50:", GenomeBoundary['N50'] , 'bp ; ', "L50:", GenomeBoundary['L50'] , ";" ,  "N90:", GenomeBoundary['N90'] , 'bp ; ', "L90:", GenomeBoundary['L90']  )
+    print ("Mean:", '%.1f' % seqmeanlen  , 'bp ; ', "Median:", '%.1f' % seqmedianlen , 'bp')
 
+    print (totallength, cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000) , GenomeBoundary['L90'] , sep='\t')
 
+    print ( '%.3f' % ( totallength / 1000000000 ), cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000), GenomeBoundary['L90'] , sep='\t')
+
+    
     if args.nanohist:
-        print ('here!')
+        print ('Plotting histogram')
         out_png = args.nanohist + '.hist.png'
         bins = np.arange(0, 50000, 1000)
-        plt.hist( allreadlen, bins=bins, alpha=0.5 )
+        plt.hist( allreadlen, bins=bins, alpha=0.5 , color="#3F5D7D")
         plt.title(args.nanohist)
         plt.xlim(0,30000)
 
-        xlabeltext = "Read len (bp), total=" + str(totallength) + 'bp ; N50=' +  str(GenomeBoundary['N50']) , 'bp'
-        plt.xlabel(xlabeltext)
+        xlabeltext = 'Read len (bp); total=' + '%.3f' % ( totallength / 1000000000 )  + 'Gb ; N50=' +  str(GenomeBoundary['N50']) + 'bp'
+        plt.xlabel(xlabeltext, fontsize=12)
         plt.ylabel("Frequency")
         plt.axvline(GenomeBoundary['N50'], color='b', linestyle='dashed', linewidth=2)
 
