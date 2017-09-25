@@ -33,12 +33,17 @@ while (<IN>) {
 
     my $name = $_ ;
 
-    $name =~ s/^\@/\>/ ; 
+    $name =~ s/^\@/\>/ ;
+
+    if ( $name =~ /^(\S+)/ ) {
+	$name = $1 ; 
+    }
+    
     my $seq = <IN> ;
     my $tmp = <IN> ;
     my $qual = <IN> ;
 
-    print "$name$seq" ; 
+    print "$name\n$seq" ; 
 
 }
 

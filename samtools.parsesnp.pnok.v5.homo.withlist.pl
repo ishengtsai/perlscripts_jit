@@ -32,7 +32,14 @@ open (IN, "$listfile") or die "Dasodapdoadopaod\n" ;
 
 while (<IN>) {
     chomp ;
-    $list{$_}++ ; 
+    my $line = $_ ; 
+    
+    if ( /(^\S+)\s+(\S+)/ ) {
+	$list{$1} = $2 ;
+    }
+    else{
+    	$list{$line} = $line ;
+    }
 }
 
 
@@ -133,7 +140,7 @@ print "printint snp alignment...\n" ;
 
 for my $name ( sort keys %sampleSeq ) {
     next unless $list{$name} ; 
-    print OUT  ">$name\n" ; 
+    print OUT  ">$list{$name}\n" ; 
     print OUT  "$sampleSeq{$name}\n" ; 
 }
 
