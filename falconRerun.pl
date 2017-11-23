@@ -53,5 +53,5 @@ system("mv p_ctg.fa.above1000.fa p_ctg.fa.max_diff$max_diff.max_cov$max_cov.min_
 
 
 print "\n\n\n\nStats:\nmax_diff$max_diff.max_cov$max_cov.min_cov$min_cov.min_len$min_len1.min_len$min_len2\n" ; 
-system("stats p_ctg.fa.max_diff$max_diff.max_cov$max_cov.min_cov$min_cov.min_len$min_len1.min_len$min_len2") ;
+system("fastn2stats.py --fastn p_ctg.fa.max_diff$max_diff.max_cov$max_cov.min_cov$min_cov.min_len$min_len1.min_len$min_len2") ;
 
