@@ -17,11 +17,20 @@ CPU=$5
 
 smalt index -k 20 -s 13 $REF $REF
 smalt map -i 10000 -n $CPU -x -f samsoft $REF $FORWARD $REVERSE | samtools view -b - > $SAMPLE.bam
-#samtools sort -@ $CPU -O bam -o $SAMPLE.sorted.bam $SAMPLE.sam
 
+
+
+# fixmate, sort then markdup
+samtools fixmate -@ $CPU -m -O bam $SAMPLE.bam $SAMPLE.fixmate.bam
+samtools sort -@ $CPU -o $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.bam
+samtools markdup -@ $CPU $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.sorted.markdup.bam
+
+# bamtools stats
+bamtools stats -in $SAMPLE.fixmate.sorted.markdup.bam -insert > $SAMPLE.fixmate.sorted.markdup.bam.stats
+
+
+#Old using picard
+#samtools sort -@ $CPU -O bam -o $SAMPLE.sorted.bam $SAMPLE.sam
 #java -Xmx6g -jar /usr/local/bioinfo/picard-tools-1.130/picard.jar MarkDuplicates METRICS_FILE=metrics CREATE_INDEX=true INPUT=$SAMPLE.sorted.bam OUTPUT=$SAMPLE.sorted.markdup.bam
 #java -Xmx6g -jar /home/ijt/bin/picard.jar MarkDuplicates METRICS_FILE=metrics CREATE_INDEX=true INPUT=$SAMPLE.sorted.bam OUTPUT=$SAMPLE.sorted.markdup.bam
-
-#samtools markdup -@ $CPU $SAMPLE.sorted.bam $SAMPLE.sorted.markdup.bam
-
 #bamtools stats -in $SAMPLE.sorted.markdup.bam -insert > $SAMPLE.sorted.markdup.bam.stats
