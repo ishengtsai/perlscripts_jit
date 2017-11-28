@@ -22,6 +22,8 @@ smalt map -i 10000 -n $CPU -x -f samsoft $REF $FORWARD $REVERSE | samtools view 
 samtools fixmate -@ $CPU -m -O bam $SAMPLE.bam $SAMPLE.fixmate.bam
 samtools sort -@ $CPU -o $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.bam
 samtools markdup -@ $CPU $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.sorted.markdup.bam
+samtools index $SAMPLE.fixmate.sorted.markdup.bam
+
 # bamtools stats
 bamtools stats -in $SAMPLE.fixmate.sorted.markdup.bam -insert > $SAMPLE.fixmate.sorted.markdup.bam.stats
 
@@ -40,6 +42,8 @@ smalt map -i 10000 -n $CPU -x -f samsoft $REF $FORWARD $REVERSE | samtools view 
 samtools fixmate -@ $CPU -m -O bam $SAMPLE.bam $SAMPLE.fixmate.bam
 samtools sort -@ $CPU -o $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.bam
 samtools markdup -@ $CPU $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.sorted.markdup.bam
+samtools index $SAMPLE.fixmate.sorted.markdup.bam
+
 # bamtools stats
 bamtools stats -in $SAMPLE.fixmate.sorted.markdup.bam -insert > $SAMPLE.fixmate.sorted.markdup.bam.stats
 
@@ -56,6 +60,8 @@ smalt map -i 10000 -n $CPU -x -f samsoft $REF $FORWARD $REVERSE | samtools view 
 samtools fixmate -@ $CPU -m -O bam $SAMPLE.bam $SAMPLE.fixmate.bam
 samtools sort -@ $CPU -o $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.bam
 samtools markdup -@ $CPU $SAMPLE.fixmate.sorted.bam $SAMPLE.fixmate.sorted.markdup.bam
+samtools index $SAMPLE.fixmate.sorted.markdup.bam
+
 # bamtools stats
 bamtools stats -in $SAMPLE.fixmate.sorted.markdup.bam -insert > $SAMPLE.fixmate.sorted.markdup.bam.stats
 
