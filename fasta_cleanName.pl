@@ -46,7 +46,12 @@ my $count = 1 ;
 
 		$seqname =~ s/\|/./gi ; 
 		$seqname =~ s/\#/./gi ; 
+                $seqname =~ s/\=/./gi ;
+                $seqname =~ s/\;/./gi ;
+		
+		
 
+		
 		#print "" . length($seqname) . "\n" ; 
 
 		if ( length($seqname) > 40 ) {
