@@ -1,0 +1,316 @@
+#!/usr/bin/perl -w
+use strict;
+use Data::Dumper;
+use Cwd;
+
+=notice=
+This pipelie is used for cases without precomputed BLAST results
+=cut
+
+my $current_path= getcwd;
+chdir $current_path;
+
+my @user_parameters= @ARGV;
+my $para_hash= &CheckPara([@user_parameters]);
+
+my $orthofinder_path= $para_hash->{'-orthofinder_path'};
+my $fasta_folder= $para_hash->{'-fasta_folder'};
+$fasta_folder=~s/\/$//;
+
+my $thread_n= $para_hash->{'-thread_n'} || 1;
+my $orthofinder_output_dir= $para_hash->{'-orthofinder_result_folder'} || '';
+my $run_orthofinder= $para_hash->{'-run_orthofinder'};
+my $run_alignment= $para_hash->{'-run_alignment'};
+my $new_fasta= "$fasta_folder.tmp";
+my $new_groups_file= "$fasta_folder/../groups.txt";
+my $log_file= "$fasta_folder/../run_orthofinder.log";
+my $grouped_fasta_folder= "$fasta_folder.grouped";;
+
+die "The input folder \'$fasta_folder\' does not exist \n" if (not -e $fasta_folder);
+
+## run OrthoFinder.py
+## python version should be 2.7
+&PrintLog($log_file, "run orthofinder.py...\n");
+if ($run_orthofinder eq '1'){
+    open OF, "python $orthofinder_path -f $fasta_folder -t $thread_n|";
+    while (my $line=<OF>){
+	if ($line=~/^\s+(.+)\/OrthologousGroups.csv/){
+	    $orthofinder_output_dir= $1;
+	}
+    }
+    close OF;
+}
+
+&PrintLog($log_file, "read species table...\n");
+my $dir= "$orthofinder_output_dir/WorkingDirectory/";
+my $groups_data= &FindGroupsFile($dir);
+my $species_id= &ReadSpeciesTable("$dir/SpeciesIDs.txt");## input
+
+&PrintLog($log_file, "transform fasta files...\n");
+$new_fasta= &CopyAndTransformFasta($dir, $new_fasta, $species_id);## output
+&PrintLog($log_file, "transform the groups.txt...\n");
+&CopyAndTransformGroups($groups_data, $species_id);## output
+&PrintLog($log_file, "collecting sequences of a group into one file...\n");
+
+## collect sequences of a group into one file and run alignment for them
+## make sequence library
+{
+    &PrintLog($log_file, "read all sequences...\n");
+    my %seq_library= ();
+    opendir D, "$new_fasta";
+    my @files= readdir D;
+    foreach my $file (@files){
+	open FASTA, "< $new_fasta/$file" or die;
+	my $specie= '';
+	my $seq_id= '';
+	my $seq= '';
+	my $line=<FASTA>;
+	if ($line=~/^>(\S+)\|(\S+)/){
+	    $specie= $1;
+	    $seq_id= $2;
+	}
+	while (my $line=<FASTA>){
+		if ($line=~/^>(\S+)\|(\S+)/){
+		    $seq_library{$specie}->{$seq_id}= $seq;
+		    $specie= $1;
+		    $seq_id= $2;
+		    $seq= '';
+		}
+		else {
+		    chomp $line;
+		    $seq.= $line;
+		}
+	     
+	}
+	$seq_library{$specie}->{$seq_id}= $seq;
+	close FASTA;
+    }
+    closedir D;
+
+    ##collect sequences
+    &PrintLog($log_file, "generate fasta files and compute their alignments...\n");
+    if (-e $grouped_fasta_folder){
+	my $i= 1;
+  	my $alternative= $grouped_fasta_folder."\.$i";
+        until (not -e $alternative){
+	    $i+= 1;
+  	    $alternative= $grouped_fasta_folder."\.$i";
+	}
+        $grouped_fasta_folder= $alternative;
+    }
+    system "mkdir $grouped_fasta_folder";
+
+    my $total_specie_num= scalar(keys %seq_library);
+    open NG, "< $new_groups_file" or die;
+    LINE:while (my $line=<NG>){
+	chomp $line;
+	my @d= split /[\s\:]+/, $line;
+	my $group_id= shift @d;
+	
+	## check single copies
+	my $seq_num= scalar(@d);
+	if ($seq_num != $total_specie_num){
+	    next LINE;
+	}
+	my %species= ();
+	map {/(\S+)\|/;$species{$1}= 1;} @d;
+	my $specie_num= scalar(keys %species);
+	if ($specie_num != $total_specie_num){
+            next LINE;
+        }
+
+	## print the fasta file
+	my $grouped_fasta= "$grouped_fasta_folder/$group_id.fasta";
+	my $grouped_aln= "$grouped_fasta_folder/$group_id.aln";
+	open GF, ">> $grouped_fasta_folder/$group_id.fasta" or die;
+	foreach my $member (@d){
+	    my @fields= split /\|/, $member;
+	    print GF ">$fields[0]";
+	    for my $i (0..length($seq_library{$fields[0]}->{$fields[1]})){
+		print GF "\n" if (($i % 60 == 0)||($i == length($seq_library{$fields[0]}->{$fields[1]})));
+		print GF substr $seq_library{$fields[0]}->{$fields[1]}, $i, 1;
+	    }
+	}
+	close GF;
+
+	## run mafft for alignments
+	system "mafft --maxiterate 1000 $grouped_fasta > $grouped_aln" if ($run_alignment);
+	
+    }
+    close NG;
+}
+&PrintLog($log_file, "\t=END=");
+
+sub ReadSpeciesTable{
+#0: Magal.fasta
+    my $specie_table= pop;
+    my %hash= ();
+    open SP, "< $specie_table" or die "OOPS: The file $specie_table is required but it cannot be found\n";
+    my @lines= <SP>;
+    close SP;
+    foreach (@lines){
+    	if ($_=~/([0-9]+)\: (.+)\n/){
+	    my $id= $1;
+	    my $specie= $2;
+	    $specie=~s/\.fasta//;
+	    $hash{$id}= $specie;
+	}
+    }
+    return (\%hash);
+}
+
+## transform the fasta files    
+sub CopyAndTransformFasta{
+    my ($ori_fasta, $new_fasta_folder, $species_idtable)= @_;
+    if (-e $new_fasta_folder){
+	my $i= 1;
+  	my $alternative_new_fasta= $new_fasta_folder."\.$i";
+        until (not -e $alternative_new_fasta){
+	    $i+= 1;
+  	    $alternative_new_fasta= $new_fasta_folder."\.$i";
+	}
+        $new_fasta_folder= $alternative_new_fasta;
+    }
+    system "mkdir $new_fasta_folder";
+
+    system "cp $ori_fasta/SequenceIDs.txt $new_fasta_folder/";
+    system "cp $ori_fasta/SpeciesIDs.txt $new_fasta_folder/";
+
+    opendir D, "$ori_fasta" or die "OOPS: cannot open $ori_fasta\n";
+    my @generated_fasta_files= grep {/Species\w+\.fa/} readdir D;
+    closedir D;
+
+    foreach my $file (@generated_fasta_files){
+	$file=~/Species([0-9]+)\.fa/;
+	my $specie= $species_idtable->{$1};
+	open F, "< $dir/$file";
+	system "rm $new_fasta_folder/$file" if (-e "$new_fasta_folder/$file");
+	open NEW, ">> $new_fasta_folder/$file";
+	while (my $line=<F>){
+	    if ($line=~/^\>([0-9]+)_/){
+		$line=~s/\>/\>$specie\|/;
+	    }
+	    print NEW "$line";
+	}
+	close F;
+	close NEW;
+    }
+
+    return ($new_fasta_folder);
+}
+
+## generate the groups.txt file
+sub CopyAndTransformGroups{## generate the groups.txt file
+    my ($groups_file, $species_idtable)= @_;
+    open G, "< $groups_file" or die "cannot find $groups_file";
+    my $line=<G>;
+    $line=<G> until ($line=~/begin/);
+
+    my $group_id= '';
+    my %members= ();
+    #while ($line=<G>){
+    do{
+	if ($line=~/^([0-9]+)/){
+	    $group_id= $1;
+	    @{$members{$group_id}}= ();
+	    my @d= $line=~/([0-9]+_[0-9]+)/g;
+	    map {if (/([0-9]+)\_/){$_=$species_idtable->{$1}.'|'.$_;}} @d;
+	    @{$members{$group_id}}= sort{$a cmp $b} @d;
+	}
+	elsif ($line=~/^\s+/){
+	    my @d= $line=~/([0-9]+_[0-9]+)/g;
+	    map {if (/([0-9]+)\_/){$_=$species_idtable->{$1}.'|'.$_;}} @d;
+	    push @{$members{$group_id}}, @d;
+	    @{$members{$group_id}}= sort{$a cmp $b} @{$members{$group_id}};
+	}
+    }    while ($line=<G>);
+    close G;
+
+    system "rm $new_groups_file" if (-e $new_groups_file);
+    open NG, ">> $new_groups_file";
+    map {print NG "$_: @{$members{$_}}\n";} sort {$a <=> $b} keys %members;
+    close NG;
+}
+
+sub PrintLog{
+	my ($file, $message)= @_;
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)= localtime(time);
+	open L, ">> $file";
+	print L "$hour:$min\t$message";
+	close L;
+}
+
+sub CheckPara{
+	my $para= pop;
+	if ($#{$para} < 0){
+	    die &PrintDescription();
+	}
+	my %parameters= (
+	    '-fasta_folder'=> 0, '-thread_n'=> 0, 
+	    '-orthofinder_result_folder'=> 0, '-run_orthofinder'=> 0, 
+	    '-run_alignment' => 0, '-orthofinder_path'=> 0
+	);
+	my %user= ();
+	my %hash= ();
+	foreach my $i (grep {$_ % 2 == 0} 0..$#{$para}){
+	    if (exists $parameters{$para->[$i]}){
+		if (not defined $para->[$i]){
+		    die "$para->[$i] was included but its value was not determined\n";
+		}
+		else{
+		    $user{$para->[$i]}= $para->[$i+1];
+		}
+	    }
+	    else {
+		my @wierd= grep {not exists $parameters{$para->[$_]}} grep {$_ % 2 == 0} 0..$#{$para};
+		my $warning= '';
+		map {$warning.= " $para->[$_]"} @wierd;
+		die "unrecognizable parameters: $warning\n";
+	    }
+	}
+
+	if (not exists $user{'-fasta_folder'}){
+		die "-fasta_folder is required\n";
+	}
+
+	if (not exists $user{'-orthofinder_path'}){
+		die "-orthofinder_path is required\n";
+	}
+
+	if ((not exists $user{'-run_alignment'}) || ($user{'-run_alignment'} ne '0')){
+	     $user{'-run_alignment'}= '1';
+	}
+
+	if ((not exists $user{'-run_orthofinder'}) || ($user{'-run_orthofinder'} ne '0')){
+	     $user{'-run_orthofinder'}= '1';
+	}
+	if (($user{'-run_orthofinder'} eq '0') && (not exists $user{'-orthofinder_result_folder'})){
+		die "When OrthoFinder is not involved, an available folder of OrthoFinder results should be provided using \'-orthofinder_result_folder\'\n";
+	}
+	elsif (($user{'-run_orthofinder'} ne '0') && (exists $user{'-orthofinder_result_folder'})){
+		die "Please stop using OrthoFinder (-run_orthofinder 0) if you want to use an available folder of OrthoFinder results\n";
+	}
+	return (\%user);
+}
+
+sub FindGroupsFile {
+    my $dir= pop;
+    
+    opendir D, "$dir" or die;
+    my @files= grep {/_id_pairs\.txt$/} readdir D;
+    closedir D;
+    my $file= pop @files;
+
+    return ("$dir/$file");
+}
+
+sub PrintDescription{
+	print "[required parameters]\n";
+	print "\t-fasta_folder: the folder contains all proteomic sequences of each specie\n";
+	print "\t-orthofinder_path: path of the python cript of orthofinder.py\n";
+	print "\n[optional parameters]\n";
+	print "\t-thread_n: thread number used in OrthoFinder (default= 1)\n";
+	print "\t-orthofinder_result_folder: used when results of OrthoFinder are available\n";
+	print "\t-run_orthofinder: used to turn off OrthoFinder and to only extract single copied genes with available results of OrthoFinder (1= run [default]; 0= skip)\n";
+	print "\t-run_alignment: used to turn off alignment (1= run [default]; 0= skip)\n"
+}

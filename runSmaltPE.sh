@@ -15,7 +15,7 @@ CPU=$5
 
 
 
-smalt index -k 20 -s 13 $REF $REF
+smalt index -k 14 -s 8 $REF $REF
 smalt map -i 10000 -n $CPU -x -f samsoft $REF $FORWARD $REVERSE | samtools view -b - > $SAMPLE.bam
 
 

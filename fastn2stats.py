@@ -8,6 +8,8 @@ from collections import Counter
 import statistics
 import re
 
+import gzip
+
 from Bio import SeqIO
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
 
@@ -16,6 +18,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import numpy as np
+
 
 
 
@@ -50,6 +53,10 @@ print ('filename is ' , filename)
 fastqpattern = [ re.compile('\.fq$') ,
                  re.compile('\.fastq$') ]
 
+fastqGZpattern = [ re.compile('\.fq.gz$') ,
+                 re.compile('\.fastq.gz$') ]
+
+
 # default is fasta
 seqfileformat = 'fasta'
 #if (any(regex.search(filename) for regex in fastapattern)):
@@ -57,6 +64,9 @@ seqfileformat = 'fasta'
 if (any(regex.search(filename) for regex in fastqpattern)):
     print (filename, 'is fastq!')
     seqfileformat = 'fastq'
+elif (any(regex.search(filename) for regex in fastqGZpattern)):
+    print (filename, 'is fastq gzipped!')
+    seqfileformat = 'fastqGZ'
 else:
     print ('Assume fasta')
 
@@ -71,34 +81,10 @@ cumseqnum = 0
 
 
 
-
-
-# store sequence length in counter
-with open(filename) as fastn_file: # Will close handle cleanly
-    identifiers = []
-    #lengths = []
-
-    if seqfileformat == 'fasta':
-        for seq_record in SeqIO.parse(fastn_file, seqfileformat):  # (generator)
-            #print (seq_record.id , "\t", len(seq_record.seq))
-            #identifiers.append(seq_record.id)
-            seqlen = len(seq_record.seq)
-            totallength += seqlen            
-            seqlength[ seqlen ] += 1
-            
-            if minlen == 0:
-                minlen = seqlen
-            if minlen > seqlen:
-                minlen = seqlen
-            if maxlen <= seqlen:
-                maxlen = seqlen
-            
-            cumseqnum += 1 
-
-                
-    elif seqfileformat == 'fastq':
-
-        for (title, sequence, quality) in FastqGeneralIterator(fastn_file):
+if seqfileformat == 'fastqGZ':
+    with gzip.open(filename, "rt") as fastn_file:
+    
+        for (title, sequence, quality) in FastqGeneralIterator(  fastn_file  ):
             seqlen = len(sequence)
             totallength += seqlen
             seqlength[seqlen] += 1
@@ -109,8 +95,53 @@ with open(filename) as fastn_file: # Will close handle cleanly
                 minlen = seqlen
             if maxlen <= seqlen:
                 maxlen = seqlen
-            
+                
             cumseqnum += 1
+
+
+else:    
+    # store sequence length in counter
+    with open(filename) as fastn_file: # Will close handle cleanly
+        identifiers = []
+        #lengths = []
+
+        if seqfileformat == 'fasta':
+            for seq_record in SeqIO.parse(fastn_file, seqfileformat):  # (generator)
+                #print (seq_record.id , "\t", len(seq_record.seq))
+                #identifiers.append(seq_record.id)
+                seqlen = len(seq_record.seq)
+                totallength += seqlen            
+                seqlength[ seqlen ] += 1
+                
+                if minlen == 0:
+                    minlen = seqlen
+                if minlen > seqlen:
+                    minlen = seqlen
+                if maxlen <= seqlen:
+                    maxlen = seqlen
+            
+                cumseqnum += 1 
+
+                
+        elif seqfileformat == 'fastq':
+
+            for (title, sequence, quality) in FastqGeneralIterator(fastn_file):
+                seqlen = len(sequence)
+                totallength += seqlen
+                seqlength[seqlen] += 1
+            
+                if minlen == 0:
+                    minlen = seqlen
+                if minlen > seqlen:
+                    minlen = seqlen
+                if maxlen <= seqlen:
+                    maxlen = seqlen
+            
+                cumseqnum += 1
+
+
+
+
             
 #print(seqlength)
 
@@ -141,7 +172,7 @@ for seqlen in allreadlen:
 
 # Now display stats
 print ("Total seq len:" , totallength , "Total seq num:", cumseqnum, "longest:" , maxlen, "minimum:", minlen)
-print ("N50:", GenomeBoundary['N50'] , 'bp ; ', "L50:", GenomeBoundary['L50'] , ";" ,  "N90:", GenomeBoundary['N90'] , 'bp ; ', "L90:", GenomeBoundary['L90']  )
+print ("N50:", GenomeBoundary['N50'] , ' bp ; ', "L50:", GenomeBoundary['L50'] , " ;" ,  "N90:", GenomeBoundary['N90'] , ' bp; ', "L90:", GenomeBoundary['L90'] )
 print ("Mean:", '%.1f' % seqmeanlen  , 'bp ; ', "Median:", '%.1f' % seqmedianlen , 'bp')
 print (totallength, cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000) , GenomeBoundary['L90'] , sep='\t')
 print ( '%.3f' % ( totallength / 1000000000 ), cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000), GenomeBoundary['L90'] , sep='\t')
@@ -150,12 +181,12 @@ print ( '%.3f' % ( totallength / 1000000000 ), cumseqnum, '%.1f' % (seqmeanlen /
 if args.nanohist:
     print ('Plotting histogram')
     out_png = args.nanohist + '.hist.png'
-    bins = np.arange(0, 50000, 1000)
+    bins = np.arange(0, 100000, 1000)
     plt.hist( allreadlen, bins=bins, alpha=0.5 , color="#3F5D7D")
     plt.title(args.nanohist)
-    plt.xlim(0,30000)
+    plt.xlim(0,80000)
     
-    xlabeltext = 'Read len (bp); total=' + '%.3f' % ( totallength / 1000000000 )  + 'Gb ; N50=' +  str(GenomeBoundary['N50']) + 'bp'
+    xlabeltext = 'Read len (bp); total=' + '%.3f' % ( totallength / 1000000000 )  + 'Gb ; N50=' +  str(GenomeBoundary['N50']) + 'bp ; Longest=' + str(maxlen)
     plt.xlabel(xlabeltext, fontsize=12)
     plt.ylabel("Frequency")
     plt.axvline(GenomeBoundary['N50'], color='b', linestyle='dashed', linewidth=2)

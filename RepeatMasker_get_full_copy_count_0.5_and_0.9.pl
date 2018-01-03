@@ -22,6 +22,9 @@ my $proportion2 = 0.9 ;
 
 open OUT1, ">", "$RM_file.full.copy.TEs.$proportion1" or die "ooooooooooooooops\n" ;
 open OUT2, ">", "$RM_file.full.copy.TEs.$proportion2" or die "ooooooooooooooops\n" ;
+open OUT3, ">", "$RM_file.full.copy.TEs.all" or die "ooooooooooooooops\n" ;
+
+
 open OUTSUM, ">", "$RM_file.full.copy.TEs.0.5.0.9.summary" or die "ooooooooooooooops\n" ;
 
 
@@ -168,7 +171,7 @@ while (<IN>) {
     $repeat_total{$line[9]} += $match_len;
 
 
-
+    print OUT3 "$line[4]\tRepeatMasker\tParsed\t$line[5]\t$line[6]\t$line[1]\t+\t.\tMatchLen:$match_len\;Consensus:$line[9]\;Type:$line[10]\n" ;
 
     if ( ( $match_len / length($contig_seq{$line[9]}) )  >= $proportion1 ) {
 	#print OUT "$match_len @line\n" ;

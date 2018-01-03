@@ -46,7 +46,7 @@ score   div. del. ins.  sequence                 begin  end      (left)   repeat
 
 '''
 
-print ("Now start parsing maker gtf files..\n")
+print ("Now start parsing gff files..\n")
 
 # Right most position of exon to calculate intron
 
@@ -66,6 +66,9 @@ for line in inFile:
         #        continue
         
         r[8] = re.sub('C', '-', r[8])
+
+        # take all sub group into main group
+        r[10] = re.sub('/.+$', '', r[10])
         
         #print(r)
         print(r[4],  str(int(r[5])-1) , r[6], r[9] , r[10],  sep='\t', file=fw_gff)

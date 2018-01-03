@@ -1,0 +1,61 @@
+#!/usr/bin/perl -w
+use strict;
+use Cwd;
+
+if ($#ARGV != 2){
+    die "Error!\nfilter_seq FOLDER/OF/FASTA/FILES Min_length_of_sequences Max_percent_of_stop_codons\n";
+}
+
+my $min_length= pop @ARGV;
+my $max_stop_percent= pop @ARGV;
+my $query_folder= pop @ARGV;
+$query_folder=~s/\/$//;
+
+#my $query_folder= "fasta";
+    chdir getcwd;
+    my $last_path= '';
+    my @path= split /\//, $query_folder;
+    $last_path= pop @path;
+    my $filtered_folder= "$query_folder/../$last_path.filtered";
+    if (-e $filtered_folder){
+	die "$filtered_folder already exists!";
+    }
+print "$filtered_folder\n";
+    system "mkdir $filtered_folder";
+
+    opendir D, "$query_folder" or die;
+    my @files= grep {/\.fasta/} readdir D;
+    closedir D;
+
+    foreach my $file (@files){
+	open FA, "< $query_folder/$file";
+	my @all= <FA>;
+	close FA;
+
+	my $all_str= join '', @all;
+	my @each= split /\>/, $all_str;
+	@each= grep {/\w+/} @each;
+	open F, ">>$filtered_folder/$file" or die;
+	foreach my $item (@each){
+	    my @d= split /\n+/, $item;
+	    my $title= shift @d;
+	    my $seq= join '', @d;
+	    $seq=~s/\s+$//;
+	    my $stop_count= $seq=~tr/*//;
+	    $seq=~s/\*//g;
+ 	    my $stop_percent= $stop_count/(length($seq));
+	    if ((length($seq) >= $min_length)&&($stop_percent <= $max_stop_percent)){
+	    	print F ">$title";
+		for my $i (0..(length($seq)-1)){
+		    if ($i%80 == 0){
+			print F "\n";
+		    }
+		    my $aa=substr $seq, $i, 1;;
+		    print F $aa;
+		}
+		print F "\n";
+	    }
+	}
+	close F;
+    }
+    
