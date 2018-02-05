@@ -6,7 +6,7 @@ my $PI = `echo $$` ; chomp($PI);
 
 
 if (@ARGV != 2) {
-    print "$0 orthomcl_19710.cluster \" species1.fa species2.fasta species3.fasta\"\n" ; 
+    print "$0 Orthogroups.txt.singletonCluster  merged.fasta\n" ; 
     print "note! stop codons have been excluded\n" ; 
 	exit ;
 }

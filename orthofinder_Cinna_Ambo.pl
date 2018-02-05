@@ -67,6 +67,9 @@ open OUT_ERR, ">", "$file.$spe1.$spe2.locationcomparison.err" or die "can't open
 
 open OUT4, ">", "$file.$spe1.$spe2.locationcomparison.perscaffTable.txt" or die "ooooca can't create file!\n" ; 
 
+open OUTSIZE, ">", "$file.$spe1.$spe2.locationcomparison.clusterSize.txt" or die "dsoadpsaodpa\n" ;
+
+
 my $count = 0 ;
 my %cluster_size = () ;
 
@@ -129,7 +132,7 @@ while (<IN>) {
     if ( $gene_count{$spe1} && $gene_count{$spe2} ) {
 	#print "$gene_count{$spe1}\t$gene_count{$spe2}\t$genes{$spe1}\t.\t$genes{$spe2}\n" ;
 
-
+	$cluster_size{"$gene_count{$spe1}\t$gene_count{$spe2}"}++ ;
     }
     
     if ( $gene_count{$spe1} && $gene_count{$spe2} ) {
@@ -209,6 +212,13 @@ while (<IN>) {
 
     $count++ ;
     #last if $count == 10;
+}
+
+
+
+print OUTSIZE "$spe1\t$spe2\tnum\n" ; 
+for my $cluster ( keys %cluster_size ) {
+    print OUTSIZE "$cluster\t$cluster_size{$cluster}\n" ;
 }
 
 

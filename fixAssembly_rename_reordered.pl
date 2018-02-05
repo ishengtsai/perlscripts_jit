@@ -58,7 +58,8 @@ open (IN, "$filenameA") or die "oops!\n" ;
 			}
 			else {
 			    chomp ;
-			    $read_seq .= $_ ;
+			    my $seq = uc($_) ; 
+			    $read_seq .= $seq ;
 			}
 
 

@@ -128,7 +128,7 @@ for line in gffFile:
                 if ( r[2] in [ 'mRNA'] ):
 
                         # Only one isoform here!
-                        if re.search('-mRNA-1', line):                        
+                        if re.search('-mRNA-1;', line):                        
                                 LinesinGene[geneName ].append(line)
                                 
                                 
@@ -141,10 +141,12 @@ for line in gffFile:
                 # Actually, since we are going to sort the CDS, it's easier to put them into a separate block
                 # And because we are going to sort, make it list of list
                 if r[2] == 'CDS':
-                        if not geneName in LinesinCDS:
-                                LinesinCDS[geneName] = [r]
-                        else:
-                                LinesinCDS[geneName].append(r)
+                        # But we also want one isoform only
+                        if re.search('-mRNA-1:cds', line):
+                                if not geneName in LinesinCDS:
+                                        LinesinCDS[geneName] = [r]
+                                else:
+                                        LinesinCDS[geneName].append(r)
 
 
         print(*r[0:9], sep="\t", file=fw_rawgff)
@@ -263,7 +265,8 @@ print ("Now start parsing maker protein files..\n")
 
 # Read protein file and check again
 
-
+aaPrinted = {}
+transcriptPrinted = {}
 
 fasta_sequences = SeqIO.parse(open(args.proteinfile),'fasta')
 
@@ -276,8 +279,11 @@ with open(species+'.aa.fa', 'w') as fw_protein:
                 
                 if name in old2newGene:
                         fasta.id = old2newGene[name]
-                        print (name, "->", old2newGene[name]) 
-                        SeqIO.write(fasta, fw_protein, "fasta")
+                        if old2newGene[name] not in aaPrinted:
+                                print (name, "->", old2newGene[name]) 
+                                SeqIO.write(fasta, fw_protein, "fasta")
+                                aaPrinted[ old2newGene[name] ] = '1'
+                        
 
                 #new_sequence = some_function(sequence)
                 #SeqIO.write
@@ -293,8 +299,10 @@ with open(species+'.nuc.fa', 'w') as fw_transcript:
 
                 if name in old2newGene:
                         fasta.id = old2newGene[name]
-                        #print (name, "->", old2newGene[name])
-                        SeqIO.write(fasta, fw_transcript, "fasta")
+                        if old2newGene[name] not in transcriptPrinted:
+                                #print (name, "->", old2newGene[name])
+                                SeqIO.write(fasta, fw_transcript, "fasta")
+                                transcriptPrinted[ old2newGene[name] ] = '1'
                 
 
 '''

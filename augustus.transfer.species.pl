@@ -9,7 +9,7 @@ my $contig = '';
 
 
 if (@ARGV != 3) {
-    print "$0 directory path.of.config speciesname\n" ;
+    print "$0 directory_name path.of.config speciesname\n" ;
     exit ;
 }
 
@@ -23,6 +23,10 @@ my $species_old = '' ;
 if ( $directory =~ /\/species\/(\S+)\/$/ ) {
     $species_old = $1 ; 
 }
+else {
+    $species_old = $directory ; 
+}
+
 
 print "\n\nold species = $species_old\n" ; 
 print "new species = $newspecies\n" ; 

@@ -122,7 +122,7 @@ for my $seq_name (sort keys %seqs ) {
         $seq_final_name= "ty1.$count\#LTR" ;
     }
     elsif ( $seq_name =~ /^Crypton/ ) {
-	$seq_final_name= "crypton\#Unknown" ; 
+	$seq_final_name= "crypton\#DNA" ; 
     }
     elsif ( $seq_name =~ /^piggybac/ ) {
 	$seq_final_name= "piggybac.$count\#DNA" ;
