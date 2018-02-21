@@ -270,7 +270,7 @@ transcriptPrinted = {}
 
 fasta_sequences = SeqIO.parse(open(args.proteinfile),'fasta')
 
-with open(species+'.aa.fa', 'w') as fw_protein:
+with open(species+'.maker.aa.fa', 'w') as fw_protein:
         for fasta in fasta_sequences:
                 name, sequence = fasta.id, str(fasta.seq)
 
@@ -292,7 +292,7 @@ with open(species+'.aa.fa', 'w') as fw_protein:
 
 fasta_sequences = SeqIO.parse(open(args.transcriptfile),'fasta')
 
-with open(species+'.nuc.fa', 'w') as fw_transcript:
+with open(species+'.maker.nuc.fa', 'w') as fw_transcript:
         for fasta in fasta_sequences:
                 name, sequence = fasta.id, str(fasta.seq)
                 print (name)

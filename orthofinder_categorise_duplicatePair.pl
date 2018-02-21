@@ -16,8 +16,8 @@ my $num = shift @ARGV ;
 
 
 open (IN, "$file") or die "oops!\n" ;
-open OUT, ">", "$file.singletonCluster" or die "can't create $file.singletonCluster\n" ;
-open OUTGENE , ">", "$file.geneInOGlist" or die "daosdpapdoapdooa\n" ; 
+open OUT, ">", "$file.duplicateCluster" or die "can't create $file.singletonCluster\n" ;
+
 
 
 my $count = 0 ;
@@ -41,7 +41,6 @@ while (<IN>) {
 	my $gene = $id[1] ; 
 	my $species = $id[0] ;
 
-	print OUTGENE "$species\t$gene\t$r[0]\t" . (@r-1) . "\n" ; 
 
 	$group{$species}++ ; 
     }
@@ -51,9 +50,10 @@ while (<IN>) {
     my $groupsize = $#r ; 
 
 
-    if ( $speciessize == $num && $groupsize == $num ) {
-
-	print OUT "$_\n" ; 
+    if ( $speciessize == $num && $groupsize == ($num+1) ) {
+	if ( $group{'CKAN'} == 2 ) {
+	    print OUT "$_\n" ; 
+	}
     }
 
 

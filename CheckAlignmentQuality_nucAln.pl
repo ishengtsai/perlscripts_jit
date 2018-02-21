@@ -12,11 +12,8 @@ if ( @ARGV != 2 ) {
 my $folder= shift ; 
 my $max_gapness = shift;
 
-my @files = glob("$folder/*.aln");
-foreach my $f (@files) {
-
-    next if $f =~ /nuc/ ; 
-    
+my @files = glob("$folder/*.nuc.aln");
+foreach my $f (@files) { 
 	#print $f."\n";
 	my $seq = "";
 	open(INF,"<$f") or die("cannot read $f\n");
