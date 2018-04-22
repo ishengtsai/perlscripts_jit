@@ -71,7 +71,7 @@ mkdir "$species.forargot.input" ;
 
 my $count = 1 ;
 my $numgenes = 0 ;  
-my $genebin = 4999 ; 
+my $genebin = 9999 ; 
 
 for my $gene ( keys %id ) {
 

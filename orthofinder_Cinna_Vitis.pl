@@ -6,14 +6,16 @@ use strict;
 
 
 if (@ARGV != 5) {
-	print "$0 contig.len.txt groups.txt gene_location Species1 Species2 \n\n" ;
+	print "$0  duplicate_yes[1]_no[0] groups.txt gene_location Species1 Species2 \n\n" ;
 	print "create partitioned list\n" ; 
 
 	exit ;
 }
 
 
-my $contiglenfile = shift @ARGV;
+#my $contiglenfile = shift @ARGV;
+
+my $Useduplicate = shift @ARGV;
 
 my $file = shift @ARGV;
 my $location_file = shift @ARGV ;
@@ -28,17 +30,17 @@ my %scaffold = () ;
 my %orthoIDtoGene = () ; 
 
 my %scaffold_gene_count = () ; 
-my %contig_len = () ; 
+#my %contig_len = () ; 
 
-open (IN, "$contiglenfile") or die "daoidoadoiad\n" ; 
-while (<IN>) {
-    if ( /(\S+)\s+(\S+)/ ) {
+#open (IN, "$contiglenfile") or die "daoidoadoiad\n" ; 
+#while (<IN>) {
+#    if ( /(\S+)\s+(\S+)/ ) {
         #print "$1\t$2\n" ;
-        $contig_len{$1} = $2 ;
-    }
+#        $contig_len{$1} = $2 ;
+#    }
 
-}
-close(IN) ; 
+#}
+#close(IN) ; 
 
 
 
@@ -63,7 +65,7 @@ open (IN, "$file") or die "oops!\n" ;
 open OUT, ">", "$file.$spe1.$spe2.locationcomparison" or die "can't open files erm!!!!!!\n" ; 
 
 
-open OUT_ERR, ">", "$file.$spe1.$spe2.locationcomparison.err" or die "can't open file for input!\n" ; 
+#open OUT_ERR, ">", "$file.$spe1.$spe2.locationcomparison.err" or die "can't open file for input!\n" ; 
 
 open OUT4, ">", "$file.$spe1.$spe2.locationcomparison.perscaffTable.txt" or die "ooooca can't create file!\n" ; 
 
@@ -113,7 +115,7 @@ while (<IN>) {
     for (my $i = 1; $i < @r ; $i++) {
 
 	if ( $r[$i] =~ /(\S+)\|(\S+)/ ) {
-	
+	    
 
 	    if ( $gene_count{$1}  ) {
 		$genes{$1} .= "\t$2"  ; 
@@ -133,9 +135,9 @@ while (<IN>) {
     #last; 
 
     if ( $gene_count{$spe1} && $gene_count{$spe2} ) {
-	print "$gene_count{$spe1}\t$gene_count{$spe2}\t$genes{$spe1}\t.\t$genes{$spe2}\n" ;
+	#print "$gene_count{$spe1}\t$gene_count{$spe2}\t$genes{$spe1}\t.\t$genes{$spe2}\n" ;
 
-	$cluster_size{"$gene_count{$spe1}\t$gene_count{$spe2}"}++ ; 
+	#$cluster_size{"$gene_count{$spe1}\t$gene_count{$spe2}"}++ ; 
     }
     
     if ( $gene_count{$spe1} && $gene_count{$spe2} ) {
@@ -146,10 +148,11 @@ while (<IN>) {
 	    my $gene1 =  $genes{$spe1}  ; 
 	    my $gene2 =  $genes{$spe2}  ; 
 
-	    
+	    $gene1 =~ s/GSVIVT/GSVIVG/gi ; 
 
 
 	    if ( $location{$gene1} && $location{$gene2}) {
+		$cluster_size{"$gene_count{$spe1}\t$gene_count{$spe2}"}++ ;
 
 		#print "$gene1\t$location{$gene1}\t$gene2\t$location{$gene2}\n" ;
 		print OUT "$gene1\t$location{$gene1}\t$gene2\t$location{$gene2}\n" ; 
@@ -167,7 +170,7 @@ while (<IN>) {
 		#else {
 		    $locationCEL = $scaffold{$gene2} ; 
 		#}
-
+		#print "herehere!\t$location1\n" ; 
 
 		$genes_in_cel_chrom{$location1}{$locationCEL}++ ; 
 
@@ -187,17 +190,54 @@ while (<IN>) {
 	    }
 	    else {
 
-		unless ( $location{$gene1} ) {
-		    print OUT_ERR "$gene1 location wierd!!!\n" ; 
-		}
+		#unless ( $location{$gene1} ) {
+		#    print OUT_ERR "$gene1 location wierd!!!\n" ; 
+		#}
 
-		unless ( $location{$gene2} ) {
-                    print OUT_ERR "$gene2 location wierd!!!\n" ;
-		}
+		#unless ( $location{$gene2} ) {
+                #    print OUT_ERR "$gene2 location wierd!!!\n" ;
+		#}
 
 	    }
 
 
+	}
+	# Check if location is here
+	elsif ( $gene_count{$spe1} == 1  && $Useduplicate == 1 ) {
+
+
+	    my $gene1 =  $genes{$spe1}  ;
+	    my @gene2 =  split /\s+/, $genes{$spe2}  ;
+
+	    $gene1 =~ s/GSVIVT/GSVIVG/gi ;
+
+
+	    next if $gene_count{$spe2} >= 10 ; 
+	    
+	    
+	    if ( $location{$gene1} ) {
+		#next ; 
+		print "here!\n" ;
+		print "@gene2\n" ;
+		my $locationFound = 0 ; 
+		foreach my $gene (@gene2) {
+		    if ( $scaffold{$gene} ) {
+			#print "$gene\t$scaffold{$gene}\n" ;
+
+			my $scaff = $scaffold{$gene1} ; 
+			my $locationCEL = $scaffold{$gene} ;
+			print "Multiple:$gene1\t$scaff\t$gene\t$locationCEL\n" ; 
+			$genes_in_cel_chrom{$scaff}{$locationCEL}++ ;
+			
+			
+			$locationFound = 1 ; 
+		    }
+		}
+		if ($locationFound == 1 ) {
+		    $cluster_size{"$gene_count{$spe1}\t$gene_count{$spe2}"}++ ;
+		    $gene_pairs++ ; 
+		}
+	    }
 	}
 
 	
@@ -232,10 +272,13 @@ for my $cluster ( keys %cluster_size ) {
 
 #my @celscaffolds = qw / Unknown ChLG3 ChLG9 ChLG7 ChLG2 ChLG5 ChLG8 ChLG4 ChLG6 ChLG10 ChLGX / ; 
 
-my @celscaffolds = qw / CKAN.scaff0001 CKAN.scaff0002 CKAN.scaff0003 CKAN.scaff0004 CKAN.scaff0005 CKAN.scaff0006 CKAN.scaff0007 CKAN.scaff0008 CKAN.scaff0009 CKAN.scaff0010 CKAN.scaff0011 CKAN.scaff0012 / ; 
+#my @celscaffolds = qw / CKAN.scaff0001 CKAN.scaff0002 CKAN.scaff0003 CKAN.scaff0004 CKAN.scaff0005 CKAN.scaff0006 CKAN.scaff0007 CKAN.scaff0008 CKAN.scaff0009 CKAN.scaff0010 CKAN.scaff0011 CKAN.scaff0012 / ; 
+
+my @celscaffolds = qw / A B C D E / ; 
 
 #header
-print OUT4 "scaff\tcontig_len\tgenes_in_scaff\tshared_one_one" ; 
+#print OUT4 "scaff\tcontig_len\tgenes_in_scaff\tshared_one_one" ;
+print OUT4 "scaff\tgenes_in_scaff\tshared_one_one" ;
 foreach (@celscaffolds) {
     print OUT4 "\t$_" ; 
 }
@@ -243,14 +286,14 @@ print OUT4 "\n" ;
 
 for my $scaff (sort keys %scaffold_gene_count) {
 
-    print OUT4 "$scaff\t$contig_len{$scaff}\t$scaffold_gene_count{$scaff}\t" ; 
+    print OUT4 "$scaff\t$scaffold_gene_count{$scaff}\t" ; 
 
 
 
 
 
     if ( $shared_gene_in_scaffold{$scaff} ) {
-	print OUT4 "$shared_gene_in_scaffold{$scaff}\t" ; 
+	print OUT4 "$shared_gene_in_scaffold{$scaff}" ; 
 
 
 	# insert things here
@@ -258,10 +301,10 @@ for my $scaff (sort keys %scaffold_gene_count) {
 
 	    if ( $genes_in_cel_chrom{$scaff}{"$celscaffold"} ) {
 		my $num = $genes_in_cel_chrom{$scaff}{"$celscaffold"} ; 
-		print OUT4 "$num\t" ; 
+		print OUT4 "\t$num" ; 
 	    }
 	    else {
-		print OUT4 "0\t" ; 
+		print OUT4 "\t0" ; 
 	    }
 	}
 

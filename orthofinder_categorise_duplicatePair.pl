@@ -50,8 +50,20 @@ while (<IN>) {
     my $groupsize = $#r ; 
 
 
-    if ( $speciessize == $num && $groupsize == ($num+1) ) {
-	if ( $group{'CKAN'} == 2 ) {
+    if ( $speciessize == $num  ) {
+	my $isSingleExpceptCkan = 1 ;
+	
+	for my $species (sort keys %group ) {
+	    next if $species eq 'CKAN' ;
+	    if ( $group{$species} != 1 ) {
+		$isSingleExpceptCkan= 0 ;
+	    }
+	}
+	if ( $group{'CKAN'} == 1 ) {
+	    $isSingleExpceptCkan= 0 ;
+	}
+	
+	if ( $isSingleExpceptCkan == 1 ) {
 	    print OUT "$_\n" ; 
 	}
     }

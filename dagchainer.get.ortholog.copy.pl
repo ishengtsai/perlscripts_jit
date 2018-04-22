@@ -10,13 +10,13 @@ my $contig = '';
 
 
 
-if (@ARGV != 1) {
+if (@ARGV != 2) {
     print "$0 fasta \n" ;
 	exit ;
 }
 
 my $filenameA = $ARGV[0];
-
+my $numCopies = $ARGV[1] ; 
 
 
 my %genes = () ; 
@@ -25,6 +25,7 @@ my %gene_synteny_count = () ;
 open (IN, "$filenameA") or die "oops!\n" ;
 
 
+open OUT, ">", "$filenameA.duplicatePair" or die "daosdpaodspao\n" ; 
 
 while (<IN>) {
 
@@ -46,7 +47,13 @@ for my $gene (sort keys  %gene_synteny_count ) {
 
     #print "$gene\t$gene_synteny_count{$gene}\n" ; 
 
-    $ortholog_counts{ $gene_synteny_count{$gene} } ++ ; 
+    $ortholog_counts{ $gene_synteny_count{$gene} } ++ ;
+
+    if ( $gene_synteny_count{$gene} <= $numCopies ) {
+	for my $genepair ( keys % { $genes{$gene} } ) {
+	    print OUT "$gene\t$genepair\n" ;
+	}
+    }
 }
 
 
@@ -55,3 +62,5 @@ for my $count ( sort keys %ortholog_counts  ) {
     print "$count\t$ortholog_counts{$count}\n" ; 
 
 }
+
+
