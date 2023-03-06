@@ -23,6 +23,7 @@ open (IN, "$contig_name") or die "oops!\n" ;
 while (<IN>) {
     chomp ;
     my @line = split /\s+/ , $_ ;
+    print "$line[0]\n" ; 
     $reads{$line[0]}++ ;
 }
 close(IN) ;
@@ -39,7 +40,7 @@ open OUT, ">", "$filenameA.included.fa" or die "daodpoad\n" ;
 	    if (/^>(\S+)/) {
 		$read_name = $1 ;
 		$read_seq = "" ;
-		$read_name =~ s/\#/\./gi ; 
+		#$read_name =~ s/\#/\./gi ; 
 		
 		while (<IN>) {
 
@@ -54,7 +55,7 @@ open OUT, ">", "$filenameA.included.fa" or die "daodpoad\n" ;
 
 			    $read_name = $1 ;
 			    $read_seq = "" ;
-			    $read_name =~ s/\#/\./gi ;
+			    #$read_name =~ s/\#/\./gi ;
 
 
 			}

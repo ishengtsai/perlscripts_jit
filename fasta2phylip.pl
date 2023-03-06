@@ -13,12 +13,17 @@ my $infile = shift or die($usage);	# input nexus file
 my $outFile = shift or die($usage);	# output phylip file
 my $unixFile = $infile.".unix";
 
+my $seqnameLen = 20 ; 
+
+
 ConvertToUnix ($infile, $unixFile);
 ChangetoPhylip($unixFile, $outFile);
 unlink ($unixFile);
 print "All done!\n";
 
 exit 0;
+
+
 
 
 ######################################################################################
@@ -73,8 +78,25 @@ sub ChangetoPhylip {
 			if ($seqCount) {
 				my $len = length $seq;
 				if ($len == $seqLen) {
-					print OUT "$seqName\t$seq\n";
-					$seq = $seqName = "";
+				    my $currentSeqnameLen = length ($seqName) ;
+
+				    if ( $currentSeqnameLen > $seqnameLen ) {
+					print "seq name: $seqName too long with $currentSeqnameLen than expected $seqnameLen\n" ;
+					exit ; 
+				    }
+				    
+				    my $newSeqNameHeader = $seqName . " " x ( $seqnameLen - $currentSeqnameLen ) ;
+				    
+				    print OUT "$newSeqNameHeader$seq\n";
+
+				    if ( $seq =~ /\s+/ ) {
+					print "$seqName very weird containing spaces!\n" ; 
+				    }
+				    
+				    $seq = $seqName = "";
+
+
+				    
 				}else {
 					unlink $unixFile;
 					unlink $phylipFile;
@@ -97,7 +119,22 @@ sub ChangetoPhylip {
 	# check the length of last sequence
 	my $len = length $seq;
 	if ($len == $seqLen) {
-		print OUT "$seqName\t$seq\n";
+	    my $currentSeqnameLen = length ($seqName) ;
+
+	    if ( $currentSeqnameLen > $seqnameLen ) {
+		print "seq name: $seqName too long with $currentSeqnameLen than expected $seqnameLen\n" ;
+		exit ;
+	    }
+
+	    my $newSeqNameHeader = $seqName . " " x ( $seqnameLen - $currentSeqnameLen ) ;
+
+	    if ( $seq =~ /\s+/ ) {
+		print "$seqName very weird containing spaces!\n" ;
+	    }
+	    
+	    print OUT "$newSeqNameHeader$seq\n";
+	    $seq = $seqName = "";
+	    #print OUT "$seqName\t$seq\n";
 	}else {
 		unlink $unixFile;
 		unlink $phylipFile;

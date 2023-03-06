@@ -24,15 +24,18 @@ my $species = '' ;
 my $read_name = '' ;
 my $read_seq = '' ;
 while (<IN>) {
-    if (/^>(\S+)\|(\S+)/) {
+     s/\:/_/gi ;
+
+    if (/^>(.+)\|(.+)/) {
 	$read_name = $2 ;
 	$read_seq = "" ;
 	$species = $1 ;  
 	
 	while (<IN>) {
 	    $read_seq =~ s/\*//g ;
+	    s/\:/_/gi ;
 	    
-	    if (/^>(\S+)\|(\S+)/) {
+	    if (/^>(.+)\|(.+)/) {
 		
 		
 		$seqs{$species}{$read_name} = $read_seq ;
@@ -62,15 +65,18 @@ $species = '' ;
 $read_name = '' ;
 $read_seq = '' ;
 while (<IN>) {
-    if (/^>(\S+)\|(\S+)/) {
+     s/\:/_/gi ;
+    
+    if (/^>(.+)\|(.+)/) {
 	$read_name = $2 ;
 	$read_seq = "" ;
 	$species = $1 ;
 
 	while (<IN>) {
 	    $read_seq =~ s/\*//g ;
-
-	    if (/^>(\S+)\|(\S+)/) {
+	     s/\:/_/gi ;
+	    
+	    if (/^>(.+)\|(.+)/) {
 
 
 		$seqs_nuc{$species}{$read_name} = $read_seq ;
@@ -126,32 +132,50 @@ while (<IN>) {
 
     open OUT, ">", "$group.fa" or die "ooops\n" ;
     open OUTNUC, ">", "$group.nuc.fa" or die "daosdpadoaopd\n" ; 
-    
+
+
+    print "doing $group\n" ; 
     my $ismissing = 0 ; 
 
+    # check if it's missing
     for (my $i = 1 ; $i < @r ; $i++ ) {
 
 	#print "$r[$i]\n" ;
 
-	if ( $r[$i] =~ /(^\S+)\|(\S+)/ ) {
+	if ( $r[$i] =~ /(^.+)\|(.+)/ ) {
 
 	    #print "$1 $2\n" ;
-	    if ( $seqs{$1}{$2} ) {
-		print OUT ">$1\n$seqs{$1}{$2}\n" ;
-		print OUTNUC ">$1\n$seqs_nuc{$1}{$2}\n" ; 
+	    if ( $seqs{$1}{$2} && $seqs_nuc{$1}{$2} ) {
 	    }
 	    else {
 		print "$group\t$1\t$2 NOT FOUND!\n" ; 
 		$ismissing = 1 ;
-		last  ; 
+		#last  ; 
 	    }
 	}
     }
-    close(OUT) ;
-    close(OUTNUC) ; 
-
     next if $ismissing == 1 ; 
 
+
+    for (my $i = 1 ; $i < @r ; $i++ ) {
+
+        #print "$r[$i]\n" ;
+
+        if ( $r[$i] =~ /(^.+)\|(.+)/ ) {
+
+            #print "$1 $2\n" ;
+            if ( $seqs{$1}{$2} && $seqs_nuc{$1}{$2} ) {
+		print "$1\t$2\n" ; 
+                print OUT ">$1\n$seqs{$1}{$2}\n" ;
+                print OUTNUC ">$1\n$seqs_nuc{$1}{$2}\n" ;
+            }
+
+        }
+    }
+    close(OUT) ;
+    close(OUTNUC) ;
+
+    
 
     #system("mafft $group.fa > $group.aln") ; 
 

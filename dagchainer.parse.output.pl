@@ -47,7 +47,9 @@ while (<IN>) {
 	my $strand_ref = '' ; 
 	my $strand_qry = '' ; 
 
-
+	#print "$_\n" ; 
+	#next ; 
+	
 	s/\(reverse\)//gi ; 
 	
 	my @r = split /\s+/, $_ ; 

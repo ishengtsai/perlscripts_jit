@@ -22,6 +22,7 @@ my $offset = 50 ;
 open (IN, "$filenameA") or die "oops!\n" ;
 
 open OUT, ">" , "$out" or die "oops out!\n" ;
+open OUTRAW,  ">", "$filenameA.raw.out" or die "\n" ; 
 #open GTF, ">", "$filenameA.gtf" or die "dadoapdoadpoa\n" ; 
 open OUT_debug, ">" , "$out.debug" or die "oops out!\n" ;
 
@@ -109,6 +110,9 @@ while (<IN>) {
 	print OUT "  @line *uncounted*\n" ;
 	next ;
     }
+
+
+    print OUTRAW "@line\n" ; 
     
 
     # if overlap is found...
@@ -224,10 +228,31 @@ while (<IN>) {
 			}
 
 			if ( @tokeep > 2) {
+			    #print "some really nasty bits!!\n" ;
+			    #foreach (@tokeep) {
+			#	print "Nasty: $_\n" ;
+			    #   }
+
 			    print "some really nasty bits!!\n" ;
+			    my $to_keep_line = '' ;
+			    my $score_tmp = 0 ;
 			    foreach (@tokeep) {
-				print "Nasty: $_\n" ;
+				my $line = $_ ;
+				print "Nasty: $line\n" ;
+				
+				if ( $line =~ /(^\d+)/ ) {
+				    if ( $1 > $score_tmp ) {
+					$score_tmp = $1 ;
+					$to_keep_line = $line ;
+				    }
+				}
 			    }
+
+
+			    print "Chose: $to_keep_line\n" ;
+			    print OUT " $to_keep_line *multi-nested*\n" ;
+
+			    
 			}
 			if ( @tokeep == 2) {
 			    my $left_score = 0 ;
@@ -371,9 +396,23 @@ while (<IN>) {
 
 		if ( @tokeep > 2) {
 		    print "some really nasty bits!!\n" ;
+		    my $to_keep_line = '' ;
+		    my $score_tmp = 0 ; 
 		    foreach (@tokeep) {
-                        print "Nasty: $_\n" ;
+			my $line = $_ ; 
+                        print "Nasty: $line\n" ;
+
+			if ( $line =~ /(^\d+)/ ) {
+			    if ( $1 > $score_tmp ) {
+				$score_tmp = $1 ;
+				$to_keep_line = $line ; 
+			    }
+			}
                     }
+
+
+		    print "Chose: $to_keep_line\n" ;
+		    print OUT " $to_keep_line *multi-nested*\n" ; 
 		}
 		if ( @tokeep == 2) {
 		    my $left_score = 0 ;

@@ -4,7 +4,7 @@ use strict;
 
 
 if (@ARGV != 3) {
-	print "$0 gff contigs.fa.len.txt species\n\n" ;
+	print "$0 gff contigs.fa.len.txt species\nNote: Only .1 transcripts are retained\n" ;
 
 	exit ;
 }
@@ -70,16 +70,21 @@ while (<IN>) {
             $genecount++ ;
 
 	}
+	# remove all secondary transcript here
+	elsif ( $r[9] !~ /\.t1\"\;$/ ) {
+	    #print "$_\t$r[9]\n" ; 
+	    next ; 
+	}
+
+
+
+	
 	if ($r[2] eq 'transcript') {
 	    $transcriptcount++ ; 
 
 	    my $idnum = sprintf("%07d", $genecount * 100) ; 
 	    my $transcriptnum = 1; 
 	    
-	    if ( $r[8] =~ /t(\d+)/ ) {
-		$transcriptnum = $1 ; 
-	    }
-
 
 	    $id = "$species\_$idnum.$transcriptnum" ; 
 

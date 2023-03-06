@@ -15,7 +15,7 @@
 use strict;
 
 if ( @ARGV != 1 ) {
-    print "$0 fastq \n" ; 
+    print "$0 fasta \n" ; 
     exit ; 
 }
 

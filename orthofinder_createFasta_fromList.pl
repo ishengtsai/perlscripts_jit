@@ -6,7 +6,7 @@ my $PI = `echo $$` ; chomp($PI);
 
 
 if (@ARGV != 2) {
-    print "$0 Orthogroups.txt.singletonCluster  merged.fasta\n" ; 
+    print "$0 Orthogroups/Orthogroups.txt.singletonCluster  merged.fasta\n" ; 
     print "note! stop codons have been excluded\n" ; 
 	exit ;
 }
@@ -30,15 +30,18 @@ foreach my $file (@fasta_files) {
 
 
     while (<IN>) {
-            if (/^>(\S+)\|(\S+)/) {
+	s/\:/_/gi ; 
+	
+            if (/^>(.+)\|(.+)/) {
                 $read_name = $2 ;
                 $read_seq = "" ;
                 $species = $1 ;  
 
                 while (<IN>) {
 		    $read_seq =~ s/\*//g ;
+		    s/\:/_/gi ;
 
-                        if (/^>(\S+)\|(\S+)/) {
+                        if (/^>(.+)\|(.+)/) {
                             
 
 			    $seqs{$species}{$read_name} = $read_seq ;
@@ -79,7 +82,7 @@ my $count = 0 ;
 while (<IN>) {
 
     chomp ; 
-#    print "$_\n" ;
+    #print "$_\n" ;
 
     my @r = split /\s+/, $_ ;
 
@@ -98,7 +101,7 @@ while (<IN>) {
 
 	#print "$r[$i]\n" ;
 
-	if ( $r[$i] =~ /(^\S+)\|(\S+)/ ) {
+	if ( $r[$i] =~ /(^.+)\|(.+)/ ) {
 
 	    #print "$1 $2\n" ;
 	    if ( $seqs{$1}{$2} ) {
@@ -129,5 +132,7 @@ while (<IN>) {
 
 
     $count++ ;
-    #last if $count == 10;
+    print "$group done\n\n" ; 
+    #last if $count == 5; 
+    #last;
 }

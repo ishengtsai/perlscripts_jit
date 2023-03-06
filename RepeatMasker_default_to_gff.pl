@@ -9,7 +9,7 @@ my $contig = '';
 
 
 if (@ARGV != 2) {
-	print "RepeatMasker_default_to_gff.pl RMoutput gff\n\n" ;
+	print "$0 RMoutput gff\n\n" ;
 	exit ;
 }
 
@@ -47,11 +47,11 @@ next if $line[0] =~ /\D+/ ;
 
 
 if ($line[8] eq 'C') {
-	print OUT "$line[4]\tRepeatmasker\trepeat\t$line[5]\t$line[6]\t$line[1]\t-\t.\tTarget \"Motif:$line[9]\" perc.div:$line[1]\n" ;
+	print OUT "$line[4]\tRepeatmasker\trepeat\t$line[5]\t$line[6]\t$line[1]\t-\t.\tTarget \"Motif:$line[9]\" Type:$line[10] perc.div:$line[1]\n" ;
 
 }
 else {
-	print OUT "$line[4]\tRepeatmasker\trepeat\t$line[5]\t$line[6]\t$line[1]\t+\t.\tTarget \"Motif:$line[9]\" perc.div:$line[1]\n" ;
+	print OUT "$line[4]\tRepeatmasker\trepeat\t$line[5]\t$line[6]\t$line[1]\t+\t.\tTarget \"Motif:$line[9]\" Type:$line[10] perc.div:$line[1]\n" ;
 }
 
 }

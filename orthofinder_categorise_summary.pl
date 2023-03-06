@@ -41,8 +41,15 @@ while (<IN>) {
 	my $gene = $id[1] ; 
 	my $species = $id[0] ;
 
-	print OUTGENE "$species\t$gene\t$r[0]\t" . (@r-1) . "\n" ; 
+	#print OUTGENE "$species\t$gene\t$r[0]\t" . (@r-1) . "\n" ; 
+	if ( $gene ) {
+	    print OUTGENE "$species\t$gene\t$r[0]\t" . (@r-1) . "\n" ;
+	}
+	else {
+	    print "@id\n" ; 
+	}
 
+	
 	$group{$species}++ ; 
     }
 

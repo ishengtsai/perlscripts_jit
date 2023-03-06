@@ -25,11 +25,13 @@ while (<IN>) {
     chomp;
     my @r = split /\s+/, $_ ;
 
-    if ( $r[9] >= $cdslen && $r[12] > $cdsfraction ) {
+    #print "$r[10]\t$r[13]\n" ; 
+    
+    if ( $r[10] >= $cdslen && $r[13] > $cdsfraction ) {
 	#print "$r[0]\t$r[9]\t$r[12]\n" ;
 	$included_trans{$r[0]}++ ;
 	#score set as cdslen x 3 
-	$included_trans_score{$r[0]} = $r[9] * 3 ; 
+	$included_trans_score{$r[0]} = $r[10] * 3 ; 
     }
 
 

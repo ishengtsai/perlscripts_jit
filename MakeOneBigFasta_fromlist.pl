@@ -6,7 +6,7 @@ use warnings;
 #will read all fasta files (aligned, please!) listed in column 1 of a text file, and produce a single nexus file 
 
 my $listfile = $ARGV[0];
-
+my $model = $ARGV[1] ; 
 
 open(LF,"<$listfile") or die("cannot open list file ".$listfile);
 my @files;
@@ -17,8 +17,14 @@ while (<LF>) {
 }
 close LF;
 
+open OUT , ">", "$listfile.parition.file" or die "can't open $listfile.len\n" ; 
+
 my $numseqs = -1;
 my %seqs;
+
+my $oldlen = 1;
+my $numfiles = 1 ; 
+
 foreach my $f (@files) { 
 	open(INF,"<$f") or die("cannot open $f");
 	my $seqlen = -1;
@@ -41,7 +47,7 @@ foreach my $f (@files) {
 				$seq = "";
 			}
 			($title = $_) =~ s/^>//;
-			$title =~ m/([\S+]+)/;
+			$title =~ m/(.+)/;
 			
 
 
@@ -53,7 +59,11 @@ foreach my $f (@files) {
 		if (length $seq != $seqlen) { die("in file ".$f." we have a problem - ".$title." not the same length (".(length $seq)." rather than ".$seqlen.") as other seqs here\n"); 
 		}
 	} else { $seqlen = length $seq; }
-	if ($genome ne "") { $seqs{$genome} .= $seq; } 
+	if ($genome ne "") { $seqs{$genome} .= $seq; }
+
+	print OUT "$model, p$numfiles = $oldlen-" . ($oldlen+$seqlen-1). "\n" ;
+	$oldlen += $seqlen ;
+	$numfiles++ ; 
 }
 
 my $len = -1;
