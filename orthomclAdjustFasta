@@ -4,6 +4,8 @@ use strict;
 
 &usage() unless scalar(@ARGV) == 3;
 
+print "first item $ARGV[0]\n" ; 
+
 my $taxoncode = $ARGV[0];
 my $idField = $ARGV[1];
 my $inputfile = $ARGV[2];
@@ -23,11 +25,16 @@ while(<IN>) {
     die "Fasta file '$inputfile' contains a duplicate id: $id\n" if $ids{$id};
     $ids{$id} = 1;
     print OUT ">$taxoncode|$id\n";
+
+    
+    
   } else {
     print OUT $_;
   }
 }
+close(OUT) ;
 
+print "$outputfile produced\n" ; 
 
 
 sub usage {

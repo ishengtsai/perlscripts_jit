@@ -78,7 +78,7 @@ totallength = 0
 maxlen = 0
 minlen = 0 
 cumseqnum = 0
-
+numN = 0
 
 
 if seqfileformat == 'fastqGZ':
@@ -87,6 +87,11 @@ if seqfileformat == 'fastqGZ':
         for (title, sequence, quality) in FastqGeneralIterator(  fastn_file  ):
             seqlen = len(sequence)
             totallength += seqlen
+
+            #Number of Ns
+            numN += sequence.count('N')
+            numN += sequence.count('n')
+
             seqlength[seqlen] += 1
             
             if minlen == 0:
@@ -112,6 +117,12 @@ else:
                 seqlen = len(seq_record.seq)
                 totallength += seqlen            
                 seqlength[ seqlen ] += 1
+
+                #Number of Ns
+                numN += seq_record.seq.count('N')
+                numN += seq_record.seq.count('n')
+
+
                 
                 if minlen == 0:
                     minlen = seqlen
@@ -129,7 +140,12 @@ else:
                 seqlen = len(sequence)
                 totallength += seqlen
                 seqlength[seqlen] += 1
-            
+
+                #Number of Ns
+                numN += sequence.count('N')
+                numN += sequence.count('n')
+
+                
                 if minlen == 0:
                     minlen = seqlen
                 if minlen > seqlen:
@@ -171,11 +187,11 @@ for seqlen in allreadlen:
 
 
 # Now display stats
-print ("Total seq len:" , totallength , "Total seq num:", cumseqnum, "longest:" , maxlen, "minimum:", minlen)
+print ("Total seq len:" , totallength , "Total seq num:", cumseqnum, "longest:" , maxlen, "minimum:", minlen , "NumNs:", numN)
 print ("N50:", GenomeBoundary['N50'] , ' bp ; ', "L50:", GenomeBoundary['L50'] , " ;" ,  "N90:", GenomeBoundary['N90'] , ' bp; ', "L90:", GenomeBoundary['L90'] )
 print ("Mean:", '%.1f' % seqmeanlen  , 'bp ; ', "Median:", '%.1f' % seqmedianlen , 'bp')
-print (totallength, cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000) , GenomeBoundary['L90'] , sep='\t')
-print ( '%.3f' % ( totallength / 1000000000 ), cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000), GenomeBoundary['L90'] , sep='\t')
+print (filename, totallength, cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000) , GenomeBoundary['L90'] , numN , sep='\t')
+print (filename,  '%.3f' % ( totallength / 1000000000 ), cumseqnum, '%.1f' % (seqmeanlen / 1000) , '%.1f' % (maxlen /1000), '%.1f' % (GenomeBoundary['N50'] / 1000) , GenomeBoundary['L50'], '%.1f' % (GenomeBoundary['N90'] / 1000), GenomeBoundary['L90'] , '%.1f' % (numN /1000) , sep='\t')
 
     
 if args.nanohist:

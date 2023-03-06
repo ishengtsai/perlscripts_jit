@@ -43,6 +43,7 @@ print "$filtered_folder\n";
 	    $seq=~s/\s+$//;
 	    my $stop_count= $seq=~tr/*//;
 	    $seq=~s/\*//g;
+	    next if length($seq) == 0  ;
  	    my $stop_percent= $stop_count/(length($seq));
 	    if ((length($seq) >= $min_length)&&($stop_percent <= $max_stop_percent)){
 	    	print F ">$title";

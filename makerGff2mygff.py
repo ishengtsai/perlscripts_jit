@@ -72,7 +72,7 @@ print ("Now start parsing maker gff files..\n")
 # Read gff file
 for line in gffFile:
 
-
+        #print ("here", line)
 
         
         # Skip commented lines and fasta file afterwards
@@ -80,14 +80,29 @@ for line in gffFile:
                 continue
         if re.search('^\>', line):
                 break
+        # sometimes we have weird lines like this here: skip
+        #   .5.0.639;Parent=Weevil.scaffold0003:hit:85732:4.5.0.639;Target=snap_masked-Weevil.scaffold0003-abinit-gene-639.27-mRNA-1 293 297 +;Gap=M5
+        if re.search('^\.', line):
+                continue
+        
+
 
         
         line = line.rstrip()
         r= line.split()
+        r[3] = int(r[3])
+        r[4] = int(r[4])
 
         #skip if found in contaminated scaffolds
         if r[0] in excludeScaffolds:
                 continue
+
+        
+        # skip if start greater than end
+        if r[3] > r[4]:
+                print ("erm......", r[3], r[4], line)
+                continue
+
         
         # Now need to reference from this section
         # http://www.ebi.ac.uk/~marco/2016_python_course/2-Advanced_data_structures-and-file-parsing.html
@@ -96,11 +111,16 @@ for line in gffFile:
                 print(r)
                 break
 
-        if r[1] == "maker":
+
+        #print("has it got here?", r)
+
+
+        
+        if r[1] in "maker":
                 # Need to convert numbers into int type! for sorting numerically later
                 r[3] = int(r[3])
                 
-                #print(r)
+                #print("here!!!", r)
 
                 if r[2] == "gene":
                         #print(r[8])
@@ -136,6 +156,7 @@ for line in gffFile:
                                 if not geneName in isoformNum:
                                         isoformNum[geneName] = 1
                                 else:
+                                        print("alternative isoform:", geneName)
                                         isoformNum[geneName] += 1
 
                 # Actually, since we are going to sort the CDS, it's easier to put them into a separate block
@@ -149,12 +170,24 @@ for line in gffFile:
                                         LinesinCDS[geneName].append(r)
 
 
+        r[3] = str(r[3])
+        r[4] = str(r[4])
         print(*r[0:9], sep="\t", file=fw_rawgff)
 
+        # to convert it back to integar ; so later it's also sorted numerically
+        r[3] = int(r[3])
+        r[4] = int(r[4])
+        
 
 # use bedtools to sort
 fw_rawgff.close()
 print('sorting raw gff...')
+
+# Still buggy
+#fw_rawDeleteWronggff = open( species+ '.raw2.gff' , "w")
+#bedtoolsPriorcommand = ["awk '$5>$4 {print $_}' " , species+'.raw.gff' ]
+#subprocess.call(fw_rawDeleteWronggff, stdout=fw_rawDeleteWronggff)
+
 
 fw_rawsortedgff = open( species+ '.raw.sorted.gff' , "w")
 bedtoolscommand =  ['bedtools', 'sort',  '-i',  species+'.raw.gff'  ] 
@@ -235,14 +268,21 @@ for gene in geneNameordered:
         #pprint (LinesinCDS[gene])
         #print ('\n\n\n\n')
 
-        #https://docs.python.org/2/howto/sorting.html        
-        LinesinCDS[gene]  = sorted(LinesinCDS[gene], key = operator.itemgetter(3))  # 3 = leftmost coordinate of CDS
+        #https://docs.python.org/2/howto/sorting.html
+        # need to sort numerically ; so need to convert to int!!!!!
+        LinesinCDS[gene]  = sorted(LinesinCDS[gene], key = operator.itemgetter(3)  )  # 3 = leftmost coordinate of CDS
+
+
+        
+
+        
         #pprint (LinesinCDS[gene])
         #print ('\n\n\n\n\n')
         
         CDSnum = 1 ;
         for line in LinesinCDS[gene]:
-                line[3] = str(line[3]) # convert to string so can be joined                
+                line[3] = str(line[3]) # convert to string so can be joined
+                line[4] = str(line[4])
                 print ('\t'.join(line[0:8]) + '\tID=' + ThisGeneID  + ':mRNA:CDS:' , CDSnum,
                        ';Parent=',  ThisGeneID  , ':mRNA;color=9;' ,sep='', file=fw_gff)
                 line[2] = 'exon'
