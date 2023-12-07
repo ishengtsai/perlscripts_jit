@@ -18,6 +18,7 @@ my $directory = shift @ARGV;
 
 opendir (DIR, $directory) or die $!;
 
+#print "directory\tSample_name\tTotal_reads\tMapped_reads\tMapped_reads(%)\n" ; 
 
 
 while (my $file = readdir(DIR)) {
